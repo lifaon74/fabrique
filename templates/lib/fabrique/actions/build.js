@@ -8,19 +8,23 @@ import { cmd } from '../helpers/cmd.js';
  * @return {Promise<void>}
  */
 async function build({ dev = false } = {}) {
+  const rootPath = '.';
   const sourcePath = './src';
   const destinationPath = './dist';
 
   await removeDestination(destinationPath);
 
   try {
-    const typescriptIndexFilePath = await buildTypescriptIndexFile(sourcePath);
-    await compileTypescript();
-    await copyTypescriptFiles(sourcePath, destinationPath);
-    await removeTypescriptIndexFile(typescriptIndexFilePath);
-    await copyScssFiles(sourcePath, destinationPath);
-    await buildScssIndexFile(destinationPath);
-    await buildPackageJsonFile(destinationPath, { dev });
+    const [withProtected] = await Promise.all([
+      buildTypescript(sourcePath),
+      buildScss(sourcePath, destinationPath),
+      copyOtherFiles(rootPath, destinationPath),
+    ]);
+
+    await buildPackageJsonFile(destinationPath, {
+      dev,
+      withProtected,
+    });
   } catch (error) {
     await removeDestination(destinationPath);
     throw error;
@@ -40,6 +44,41 @@ async function removeDestination(destinationPath) {
 }
 
 /**
+ * Builds the typescript part.
+ *
+ * @param {string} sourcePath
+ * @return {Promise<boolean>}
+ */
+async function buildTypescript(sourcePath) {
+  const typescriptIndexFilePath = await buildTypescriptIndexFile(sourcePath);
+  const typescriptProtectedIndexFilePath = await buildTypescriptProtectedIndexFile(sourcePath);
+
+  try {
+    await compileTypescript();
+    // await copyTypescriptFiles(sourcePath, destinationPath);
+  } finally {
+    await removeTypescriptIndexFile(typescriptIndexFilePath);
+    if (typescriptProtectedIndexFilePath !== null) {
+      await removeTypescriptIndexFile(typescriptProtectedIndexFilePath);
+    }
+  }
+
+  return typescriptProtectedIndexFilePath !== null;
+}
+
+/**
+ * Builds the scss part.
+ *
+ * @param {string} sourcePath
+ * @param {string} destinationPath
+ * @return {Promise<void>}
+ */
+async function buildScss(sourcePath, destinationPath) {
+  await copyScssFiles(sourcePath, destinationPath);
+  await buildScssIndexFile(destinationPath);
+}
+
+/**
  * Builds the typescript index file used to export all public APIs.
  *
  * @param {string} cwd
@@ -48,7 +87,16 @@ async function removeDestination(destinationPath) {
 async function buildTypescriptIndexFile(cwd = process.cwd()) {
   console.log('Building typescript index file...');
 
-  const content = (await Array.fromAsync(glob('./**/!(*.spec|*.test|*.private).ts', { cwd })))
+  const content = (
+    await Array.fromAsync(
+      glob('./**/!(*.spec|*.test|*.private|*.protected).ts', {
+        cwd,
+        exclude: (path) => {
+          return path.includes('.private') || path.includes('.protected');
+        },
+      }),
+    )
+  )
     .map((path) => {
       return `export * from './${path.slice(0, -3)}.js';`;
     })
@@ -59,6 +107,33 @@ async function buildTypescriptIndexFile(cwd = process.cwd()) {
   }
 
   const indexFilePath = join(cwd, 'index.ts');
+  await writeFile(indexFilePath, content + '\n');
+
+  return indexFilePath;
+}
+
+/**
+ * Builds the typescript index file used to export all protected APIs.
+ *
+ * @param {string} cwd
+ * @return {Promise<string | null>}
+ */
+async function buildTypescriptProtectedIndexFile(cwd = process.cwd()) {
+  console.log('Building typescript protected index file...');
+
+  const content = (
+    await Array.fromAsync(glob('{./**/*.protected/**/*.ts,./**/*.protected.ts,}', { cwd }))
+  )
+    .map((path) => {
+      return `export * from './${path.slice(0, -3)}.js';`;
+    })
+    .join('\n');
+
+  if (content === '') {
+    return null;
+  }
+
+  const indexFilePath = join(cwd, 'index.protected.ts');
   await writeFile(indexFilePath, content + '\n');
 
   return indexFilePath;
@@ -100,6 +175,7 @@ async function copyTypescriptFiles(sourcePath, destinationPath) {
 async function buildScssIndexFile(cwd = process.cwd()) {
   console.log('Building scss index file...');
 
+  // TODO exclude directories too
   const content = (await Array.fromAsync(glob('./**/!(*.private).scss', { cwd })))
     .map((path) => {
       return `@forward './${path.slice(0, -5)}';`;
@@ -182,6 +258,25 @@ function fixScssFilePath(path) {
 }
 
 /**
+ * Copies other files.
+ *
+ * @param {string} rootPath
+ * @param {string} destinationPath
+ * @return {Promise<void>}
+ */
+async function copyOtherFiles(rootPath, destinationPath) {
+  console.log('Copying other files...');
+
+  await Promise.all(
+    ['README.md', 'CONTRIBUTING.md', 'LICENSE'].map((path) => {
+      return cp(join(rootPath, path), join(destinationPath, path)).catch(() => {
+        console.log(`Missing file: ${path}`);
+      });
+    }),
+  );
+}
+
+/**
  * Removes the index file.
  *
  * @param {string} indexFilePath
@@ -195,10 +290,13 @@ async function removeTypescriptIndexFile(indexFilePath) {
  * Generates the package.json to publish.
  *
  * @param {string} destinationPath
- * @param {{ cwd?: string; dev?: boolean }} options
+ * @param {{ cwd?: string; dev?: boolean, withProtected?: boolean }} options
  * @return {Promise<void>}
  */
-async function buildPackageJsonFile(destinationPath, { cwd = process.cwd(), dev = false } = {}) {
+async function buildPackageJsonFile(
+  destinationPath,
+  { cwd = process.cwd(), dev = false, withProtected = false } = {},
+) {
   console.log('Building package.json...');
 
   const fileName = 'package.json';
@@ -208,7 +306,7 @@ async function buildPackageJsonFile(destinationPath, { cwd = process.cwd(), dev 
    */
   const pkg = JSON.parse(await readFile(join(cwd, fileName), { encoding: 'utf8' }));
 
-  const indexTypesPath = './types/index.d.ts';
+  const indexTypesPath = './index.d.ts';
 
   if (dev) {
     pkg.version += `-dev.${Date.now()}`;
@@ -220,6 +318,14 @@ async function buildPackageJsonFile(destinationPath, { cwd = process.cwd(), dev 
         types: indexTypesPath,
         default: './index.js',
       },
+      ...(withProtected
+        ? {
+            './protected': {
+              types: './index.protected.d.ts',
+              default: './index.protected.js',
+            },
+          }
+        : {}),
     },
     typings: indexTypesPath,
     types: indexTypesPath,

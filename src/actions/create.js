@@ -6,8 +6,8 @@ import { cmd } from '../helpers/cmd.js';
 import { exists } from '../helpers/fs/exists.js';
 import { explore } from '../helpers/fs/explore.js';
 import { log } from '../helpers/log/log.js';
+import { ROOT_PATH } from '../helpers/paths.constant.js';
 import { replacePattern } from '../helpers/replace-pattern.js';
-import { ROOT } from '../helpers/root.constant.js';
 
 /**
  * Creates a new lib.
@@ -23,7 +23,7 @@ export async function create(type, name) {
     throw new Error(`type must be one of the following: ${templates.join(', ')}.`);
   }
 
-  const templatePath = join(ROOT, `./templates/${type}`);
+  const templatePath = join(ROOT_PATH, `./templates/${type}`);
   const destinationPath = `./${name}`;
 
   if (await exists(destinationPath)) {

@@ -6,8 +6,10 @@
   "scripts": {
     "fb:build": "node fabrique/actions/build.js",
     "fb:format": "prettier --write --ignore-unknown --config ./.prettierrc \"src/**/*.{js,jsx,ts,tsx,html,css,scss}\"",
-    "fb:test": "jest",
-    "fb:dev": "node fabrique/actions/build.js --dev && npm publish --quiet --registry http://localhost:4873"
+    "fb:test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js",
+    "fb:test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --collect-coverage",
+    "fb:prod": "node fabrique/actions/build.js && cd dist && npm publish --access public --registry https://registry.npmjs.org",
+    "fb:dev": "node fabrique/actions/build.js --dev && cd dist && npm publish --quiet --registry http://localhost:4873"
   },
   "description": "{{description}}",
   "keywords": [],
@@ -26,9 +28,5 @@
     "ts-jest": "^29.2.2",
     "typescript": "^5.5.3"
   },
-  "packageManager": "yarn@4.3.1",
-  "fabrique": {
-    "version": "0.1.0",
-    "type": "lib"
-  }
+  "packageManager": "yarn@4.4.0"
 }

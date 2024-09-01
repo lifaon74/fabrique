@@ -20,7 +20,11 @@ program
   .action(handleError(create));
 
 // CMD: upgrade
-program.command('upgrade').description('upgrade an existing library').action(handleError(upgrade));
+program
+  .command('upgrade')
+  .description('upgrade an existing library')
+  .option('--force', 'forces the update', false)
+  .action(handleError(upgrade));
 
 // CMD: refactor <from> <to>
 program
