@@ -89,10 +89,15 @@ async function buildTypescriptIndexFile(cwd = process.cwd()) {
 
   const content = (
     await Array.fromAsync(
-      glob('./**/!(*.spec|*.test|*.private|*.protected).ts', {
+      glob('./**/*.ts', {
         cwd,
         exclude: (path) => {
-          return path.includes('.private') || path.includes('.protected');
+          return (
+            path.endsWith('.spec.ts') ||
+            path.endsWith('.test.ts') ||
+            path.includes('.private') ||
+            path.includes('.protected')
+          );
         },
       }),
     )
@@ -122,7 +127,16 @@ async function buildTypescriptProtectedIndexFile(cwd = process.cwd()) {
   console.log('Building typescript protected index file...');
 
   const content = (
-    await Array.fromAsync(glob('{./**/*.protected/**/*.ts,./**/*.protected.ts,}', { cwd }))
+    await Array.fromAsync(
+      glob('{./**/*.protected/**/*.ts,./**/*.protected.ts,}', {
+        cwd,
+        exclude: (path) => {
+          return (
+            path.endsWith('.spec.ts') || path.endsWith('.test.ts') || path.includes('.private')
+          );
+        },
+      }),
+    )
   )
     .map((path) => {
       return `export * from './${path.slice(0, -3)}.js';`;
