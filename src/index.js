@@ -6,10 +6,11 @@ import { refactor } from './actions/refactor.js';
 import { upgrade } from './actions/upgrade.js';
 import { verdaccio } from './actions/verdaccio.js';
 import { handleError } from './helpers/handle-error.js';
+import pkg from '../package.json' with { type: 'json' };
 
 // tuto: https://medium.com/nmc-techblog/building-a-cli-with-node-js-in-2024-c278802a3ef5
 
-program.name('fabrique').description('CLI to build typescript libraries.').version('0.0.1');
+program.name('fabrique').description('CLI to build typescript libraries.').version(pkg.version);
 
 // CMD: create <type> <name>
 program
