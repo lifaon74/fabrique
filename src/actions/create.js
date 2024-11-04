@@ -1,10 +1,12 @@
 import { confirm, input } from '@inquirer/prompts';
 import chalk from 'chalk';
 import { cp, readFile, rm, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { cmd } from '../helpers/cmd.js';
 import { exists } from '../helpers/fs/exists.js';
 import { explore } from '../helpers/fs/explore.js';
+import { readJsonFile } from '../helpers/fs/read-json-file.js';
+import { writeJsonFile } from '../helpers/fs/write-json-file.js';
 import { log } from '../helpers/log/log.js';
 import { ROOT_PATH } from '../helpers/paths.constant.js';
 import { replacePattern } from '../helpers/replace-pattern.js';
@@ -53,6 +55,12 @@ export async function create(type, name) {
 
   await replacePatterns(destinationPath, values);
 
+  const version = (await readJsonFile(join(ROOT_PATH, 'package.json'))).version;
+  await upgradePackage(destinationPath, {
+    version,
+    type,
+  });
+
   await cmd('yarn', [], {
     cwd: destinationPath,
   });
@@ -62,18 +70,54 @@ export async function create(type, name) {
 }
 
 /*---*/
+/**
+ * Replaces the patterns `{{name}}` from all the files found inside `cwd`.
+ *
+ * @param {string} ext
+ * @return {RegExp}
+ */
+function p_ext(ext) {
+  return new RegExp(`^.*\.${ext}$`, 'i');
+}
+
+function p_name(name) {
+  return new RegExp(`^${name}$`, 'i');
+}
+
+const DEFAULT_REPLACE_PATTERNS = [p_ext('md'), p_name('LICENSE'), p_name('package.json')];
 
 /**
  * Replaces the patterns `{{name}}` from all the files found inside `cwd`.
  *
  * @param {string} cwd
  * @param {Record<string, string>} values
+ * @param {readonly RegExp[]=} patterns
  * @return {Promise<void>}
  */
-async function replacePatterns(cwd, values) {
+async function replacePatterns(cwd, values, patterns = DEFAULT_REPLACE_PATTERNS) {
   for await (const [path, stats] of explore(cwd)) {
     if (stats.isFile()) {
-      await writeFile(path, replacePattern(await readFile(path, { encoding: 'utf8' }), values));
+      const name = basename(path);
+      if (patterns.some((pattern) => pattern.test(name))) {
+        await writeFile(path, replacePattern(await readFile(path, { encoding: 'utf8' }), values));
+      }
     }
   }
+}
+
+/**
+ * Upgrades the destination `package.json`.
+ *
+ * @param {string} destinationPath
+ * @param {{version: string; type: string;}} fabriqueConfig
+ * @return {Promise<void>}
+ */
+async function upgradePackage(destinationPath, fabriqueConfig) {
+  const packageJsonPath = join(destinationPath, 'package.json');
+  const packageJson = await readJsonFile(packageJsonPath);
+  const newPackageJson = {
+    ...packageJson,
+    fabrique: fabriqueConfig,
+  };
+  await writeJsonFile(packageJsonPath, newPackageJson);
 }

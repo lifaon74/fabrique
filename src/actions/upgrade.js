@@ -6,6 +6,7 @@ import { cmd } from '../helpers/cmd.js';
 import { explore } from '../helpers/fs/explore.js';
 import { readJsonFile } from '../helpers/fs/read-json-file.js';
 import { writeFileSafe } from '../helpers/fs/write-file-safe.js';
+import { writeJsonFile } from '../helpers/fs/write-json-file.js';
 import { listAvailableTemplates } from '../helpers/list-available-templates.js';
 import { log } from '../helpers/log/log.js';
 import { ROOT_PATH, getTemplatePath } from '../helpers/paths.constant.js';
@@ -132,7 +133,7 @@ async function upgradePackage({
 }) {
   const templatePackage = await readJsonFile(join(templatePath, 'package.json'));
 
-  const newPkg = {
+  const newPackageJson = {
     ...templatePackage,
     ...destinationPackage,
     scripts: {
@@ -150,6 +151,7 @@ async function upgradePackage({
     packageManager: templatePackage.packageManager,
     fabrique: fabriqueConfig,
   };
+
   console.log(chalk.yellowBright('merge:'), 'package.json');
-  await writeFileSafe(join(destinationPath, 'package.json'), JSON.stringify(newPkg, null, 2));
+  await writeJsonFile(join(destinationPath, 'package.json'), newPackageJson);
 }
