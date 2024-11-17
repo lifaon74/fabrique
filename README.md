@@ -47,7 +47,7 @@ The library requires [Node.js](https://nodejs.org/en) `22+` and [yarn](https://y
 We recommend to use [npx](https://docs.npmjs.com/cli/v8/commands/npx):
 
 ```shell
-npx fabrique CMD
+npx fabrique [CMD]
 ```
 
 But, you may prefer to install globally `fabrique`:
@@ -58,7 +58,7 @@ npm install -g fabrique
 And run a command with:
 
 ```shell
-fabrique CMD
+fabrique [CMD]
 ```
 
 

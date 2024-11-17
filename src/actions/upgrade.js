@@ -94,7 +94,7 @@ export async function upgrade({ force = false } = {}) {
 async function upgradeFiles(templatePath, destinationPath) {
   // files to exclude
   const exclude = [
-    /^src(?:\/.*)?$/,
+    /^src(?:[\\\/].*)?$/,
     /^README\.md$/,
     /^LICENSE$/,
     /^package\.json$/,
