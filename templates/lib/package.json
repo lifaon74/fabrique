@@ -9,7 +9,8 @@
     "fb:test": "vitest",
     "fb:test:coverage": "vitest run --coverage",
     "fb:prod": "node fabrique/actions/build.js && cd dist && npm publish --access public --registry https://registry.npmjs.org",
-    "fb:dev": "node fabrique/actions/build.js --dev && cd dist && npm publish --quiet --registry http://localhost:4873"
+    "fb:dev": "node fabrique/actions/build.js --dev && cd dist && npm publish --quiet --registry http://localhost:4873 --tag beta",
+    "fb:dev:public": "node fabrique/actions/build.js --dev && cd dist && npm publish --access public --registry https://registry.npmjs.org --tag beta"
   },
   "description": "{{description}}",
   "keywords": [],
