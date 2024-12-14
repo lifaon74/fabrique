@@ -4,10 +4,10 @@ import { cmd } from '../helpers/cmd.js';
 
 /**
  * Builds the lib.
- * @param {{ cwd?: string; dev?: boolean }} options
+ * @param {{ mode?: 'dev' | 'rc' | 'prod' }} options
  * @return {Promise<void>}
  */
-async function build({ dev = false } = {}) {
+export async function build({ mode = 'prod' } = {}) {
   const rootPath = '.';
   const sourcePath = './src';
   const destinationPath = './dist';
@@ -22,7 +22,7 @@ async function build({ dev = false } = {}) {
     ]);
 
     await buildPackageJsonFile(destinationPath, {
-      dev,
+      mode,
       withProtected,
     });
   } catch (error) {
@@ -304,12 +304,12 @@ async function removeTypescriptIndexFile(indexFilePath) {
  * Generates the package.json to publish.
  *
  * @param {string} destinationPath
- * @param {{ cwd?: string; dev?: boolean, withProtected?: boolean }} options
+ * @param {{ cwd?: string; mode?: 'dev' | 'rc' | 'prod', withProtected?: boolean }} options
  * @return {Promise<void>}
  */
 async function buildPackageJsonFile(
   destinationPath,
-  { cwd = process.cwd(), dev = false, withProtected = false } = {},
+  { cwd = process.cwd(), mode = 'prod', withProtected = false } = {},
 ) {
   console.log('Building package.json...');
 
@@ -322,8 +322,8 @@ async function buildPackageJsonFile(
 
   const indexTypesPath = './index.d.ts';
 
-  if (dev) {
-    pkg.version += `-dev.${Date.now()}`;
+  if (mode !== 'prod') {
+    pkg.version += `-${mode}.${Date.now()}`;
   }
 
   Object.assign(pkg, {
@@ -347,9 +347,3 @@ async function buildPackageJsonFile(
 
   await writeFile(join(destinationPath, fileName), JSON.stringify(pkg, null, 2));
 }
-
-/*-----------------------------------*/
-
-const [dev = false] = process.argv.slice(2);
-
-build({ dev });

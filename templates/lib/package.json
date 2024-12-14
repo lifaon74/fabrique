@@ -4,13 +4,13 @@
   "type": "module",
   "main": "./index.js",
   "scripts": {
-    "fb:build": "node fabrique/actions/build.js",
+    "fb:build": "node fabrique/actions/cli/build.cli.js",
     "fb:format": "prettier --write --ignore-unknown --config ./.prettierrc \"src/**/*.{js,jsx,ts,tsx,html,css,scss}\"",
     "fb:test": "vitest",
     "fb:test:coverage": "vitest run --coverage",
-    "fb:prod": "node fabrique/actions/build.js && cd dist && npm publish --access public --registry https://registry.npmjs.org",
-    "fb:dev": "node fabrique/actions/build.js --dev && cd dist && npm publish --quiet --registry http://localhost:4873 --tag beta",
-    "fb:dev:public": "node fabrique/actions/build.js --dev && cd dist && npm publish --access public --registry https://registry.npmjs.org --tag beta"
+    "fb:prod": "node fabrique/actions/cli/build-and-publish.cli.js --mode prod",
+    "fb:dev": "node fabrique/actions/cli/build-and-publish.cli.js --mode dev",
+    "fb:rc": "node fabrique/actions/cli/build-and-publish.cli.js --mode rc"
   },
   "description": "{{description}}",
   "keywords": [],
