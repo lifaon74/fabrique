@@ -35,6 +35,12 @@ yarn install
 ### Commands
 
 - `fb:build`: builds the library.
+  - converts the typescript files into javascript files, copies the scss files, and assembles all the assets to create a package ready to be published.
 - `fb:format`: formats the code using `prettier`.
 - `fb:test`: runs the tests using `vitest`.
-- `fb:dev`: builds the lib in `dev` mode, and publishes it on a local `verdaccio`.
+- `fb:prod`: builds the lib in `prod` mode.
+  - builds and publishes the lib on npm as a _prod_ version.
+- `fb:dev`: builds the lib in `dev` .
+  - builds and publishes the lib on a local `verdaccio` with a `dev` tag.
+- `fb:rc`: builds the lib in `rc` mode, and publishes it on a local `verdaccio`.
+  - builds and publishes the lib on npm with a `rc` tag.
