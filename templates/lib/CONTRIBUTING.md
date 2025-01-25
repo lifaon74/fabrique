@@ -40,7 +40,7 @@ yarn install
 - `fb:test`: runs the tests using `vitest`.
 - `fb:prod`: builds the lib in `prod` mode.
   - builds and publishes the lib on npm as a _prod_ version.
-- `fb:dev`: builds the lib in `dev` .
+- `fb:dev`: builds the lib in `dev` mode.
   - builds and publishes the lib on a local `verdaccio` with a `dev` tag.
-- `fb:rc`: builds the lib in `rc` mode, and publishes it on a local `verdaccio`.
+- `fb:rc`: builds the lib in `rc` mode.
   - builds and publishes the lib on npm with a `rc` tag.
