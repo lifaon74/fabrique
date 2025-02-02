@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { ROOT_PATH } from '../constants/root-path.constant.js';
 import { cmd } from '../helpers/cmd.js';
 
@@ -56,7 +56,7 @@ export async function publish({ mode = 'prod' } = {}) {
     args.push('--tag', options.tag);
   }
 
-  await cmd('npm', args, { cwd: join(process.cwd(), packagePath) });
+  await cmd('npm', args, { cwd: resolve(packagePath) });
 
   console.log('Library published with success !');
 }
