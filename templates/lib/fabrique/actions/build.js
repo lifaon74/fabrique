@@ -19,8 +19,8 @@ export async function build({ mode = 'prod' } = {}) {
   try {
     const [withProtected] = await Promise.all([
       buildTypescript(sourcePath),
-      // buildScss(sourcePath, destinationPath),
-      // copyOtherFiles(ROOT_PATH, destinationPath),
+      buildScss(sourcePath, destinationPath),
+      copyOtherFiles(ROOT_PATH, destinationPath),
     ]);
 
     await buildPackageJsonFile(destinationPath, {
