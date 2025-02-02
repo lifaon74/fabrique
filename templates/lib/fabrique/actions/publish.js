@@ -1,4 +1,5 @@
 import { join } from 'node:path';
+import { ROOT_PATH } from '../constants/root-path.constant.js';
 import { cmd } from '../helpers/cmd.js';
 
 /**
@@ -7,7 +8,7 @@ import { cmd } from '../helpers/cmd.js';
  * @return {Promise<void>}
  */
 export async function publish({ mode = 'prod' } = {}) {
-  const packagePath = './dist';
+  const packagePath = join(ROOT_PATH, 'dist');
 
   console.log('Publishing library...');
 

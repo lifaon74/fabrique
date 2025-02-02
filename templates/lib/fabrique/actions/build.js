@@ -1,6 +1,7 @@
 import { cp, readFile, rm, writeFile } from 'node:fs/promises';
 import { isAbsolute, join } from 'node:path';
 import process from 'node:process';
+import { ROOT_PATH } from '../constants/root-path.constant.js';
 import { cmd } from '../helpers/cmd.js';
 import { exploreDirectoryFiles } from '../helpers/explore-directory.js';
 
@@ -10,17 +11,16 @@ import { exploreDirectoryFiles } from '../helpers/explore-directory.js';
  * @return {Promise<void>}
  */
 export async function build({ mode = 'prod' } = {}) {
-  const rootPath = '.';
-  const sourcePath = './src';
-  const destinationPath = './dist';
+  const sourcePath = join(ROOT_PATH, 'src');
+  const destinationPath = join(ROOT_PATH, 'dist');
 
   await removeDestination(destinationPath);
 
   try {
     const [withProtected] = await Promise.all([
       buildTypescript(sourcePath),
-      buildScss(sourcePath, destinationPath),
-      copyOtherFiles(rootPath, destinationPath),
+      // buildScss(sourcePath, destinationPath),
+      // copyOtherFiles(ROOT_PATH, destinationPath),
     ]);
 
     await buildPackageJsonFile(destinationPath, {
@@ -87,22 +87,23 @@ function generateExportEsmLine(path) {
 /**
  * Builds the typescript index file used to export all public APIs.
  *
- * @param {string} cwd
+ * @param {string} sourcePath
  * @return {Promise<string>}
  */
-async function buildTypescriptIndexFile(cwd = process.cwd()) {
+async function buildTypescriptIndexFile(sourcePath) {
   console.log('Building typescript index file...');
 
   let content = '';
 
-  for await (const path of exploreDirectoryFiles(cwd, {
-    relativeTo: cwd,
+  for await (const path of exploreDirectoryFiles(sourcePath, {
+    relativeTo: sourcePath,
     pick: (path, { isFile }) => {
       if (isFile) {
         return (
           path.endsWith('.ts') &&
           !path.endsWith('.spec.ts') &&
           !path.endsWith('.test.ts') &&
+          !path.endsWith('.bench.ts') &&
           !path.endsWith('.private.ts') &&
           !path.endsWith('.protected.ts')
         );
@@ -118,7 +119,7 @@ async function buildTypescriptIndexFile(cwd = process.cwd()) {
     throw new Error('Nothing exported.');
   }
 
-  const indexFilePath = join(cwd, 'index.ts');
+  const indexFilePath = join(sourcePath, 'index.ts');
   await writeFile(indexFilePath, content + '\n');
 
   return indexFilePath;
@@ -127,16 +128,16 @@ async function buildTypescriptIndexFile(cwd = process.cwd()) {
 /**
  * Builds the typescript index file used to export all protected APIs.
  *
- * @param {string} cwd
+ * @param {string} sourcePath
  * @return {Promise<string | null>}
  */
-async function buildTypescriptProtectedIndexFile(cwd = process.cwd()) {
+async function buildTypescriptProtectedIndexFile(sourcePath) {
   console.log('Building typescript protected index file...');
 
   let content = '';
 
-  for await (const path of exploreDirectoryFiles(cwd, {
-    relativeTo: cwd,
+  for await (const path of exploreDirectoryFiles(sourcePath, {
+    relativeTo: sourcePath,
     pick: (path, { isFile }) => {
       if (isFile) {
         return (
@@ -154,7 +155,7 @@ async function buildTypescriptProtectedIndexFile(cwd = process.cwd()) {
     return null;
   }
 
-  const indexFilePath = join(cwd, 'index.protected.ts');
+  const indexFilePath = join(sourcePath, 'index.protected.ts');
   await writeFile(indexFilePath, content + '\n');
 
   return indexFilePath;
@@ -163,13 +164,13 @@ async function buildTypescriptProtectedIndexFile(cwd = process.cwd()) {
 /**
  * Compiles the typescript files.
  *
- * @param {string | undefined } cwd
+ * @param {string | undefined } rootPath
  * @return {Promise<void>}
  */
-async function compileTypescript(cwd = process.cwd()) {
+async function compileTypescript(rootPath = process.cwd()) {
   console.log('Compiling typescript...');
 
-  await cmd('tsc', ['-p', './tsconfig.build.json'], { cwd });
+  await cmd('tsc', ['-p', './tsconfig.build.json'], { cwd: rootPath });
 }
 
 /**
@@ -186,7 +187,12 @@ async function copyTypescriptFiles(sourcePath, destinationPath) {
     relativeTo: sourcePath,
     pick: (path, { isFile }) => {
       if (isFile) {
-        return path.endsWith('.ts') && !path.endsWith('.spec.ts') && !path.endsWith('.test.ts');
+        return (
+          path.endsWith('.ts') &&
+          !path.endsWith('.spec.ts') &&
+          !path.endsWith('.test.ts') &&
+          !path.endsWith('.bench.ts')
+        );
       } else {
         return true;
       }
@@ -203,16 +209,16 @@ function generateExportScssLine(path) {
 /**
  * Builds the scss index file used to export all public styles.
  *
- * @param {string} cwd
+ * @param {string} sourcePath
  * @return {Promise<void>}
  */
-async function buildScssIndexFile(cwd = process.cwd()) {
+async function buildScssIndexFile(sourcePath) {
   console.log('Building scss index file...');
 
   let content = '';
 
-  for await (const path of exploreDirectoryFiles(cwd, {
-    relativeTo: cwd,
+  for await (const path of exploreDirectoryFiles(sourcePath, {
+    relativeTo: sourcePath,
     pick: (path, { isFile }) => {
       if (isFile) {
         return (
@@ -231,7 +237,7 @@ async function buildScssIndexFile(cwd = process.cwd()) {
   if (content === '') {
     console.log('=> No scss file to export.');
   } else {
-    const indexFilePath = join(cwd, 'index.scss');
+    const indexFilePath = join(sourcePath, 'index.scss');
     await writeFile(indexFilePath, content + '\n');
   }
 }
@@ -345,12 +351,12 @@ async function removeTypescriptIndexFile(indexFilePath) {
  * Generates the package.json to publish.
  *
  * @param {string} destinationPath
- * @param {{ cwd?: string; mode?: 'dev' | 'rc' | 'prod', withProtected?: boolean }} options
+ * @param {{ rootPath?: string; mode?: 'dev' | 'rc' | 'prod', withProtected?: boolean }} options
  * @return {Promise<void>}
  */
 async function buildPackageJsonFile(
   destinationPath,
-  { cwd = process.cwd(), mode = 'prod', withProtected = false } = {},
+  { rootPath = process.cwd(), mode = 'prod', withProtected = false } = {},
 ) {
   console.log('Building package.json...');
 
@@ -359,7 +365,7 @@ async function buildPackageJsonFile(
   /**
    * @type any
    */
-  const pkg = JSON.parse(await readFile(join(cwd, fileName), { encoding: 'utf8' }));
+  const pkg = JSON.parse(await readFile(join(rootPath, fileName), { encoding: 'utf8' }));
 
   const indexTypesPath = './index.d.ts';
 

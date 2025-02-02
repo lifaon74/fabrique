@@ -5,6 +5,7 @@
 
 ## {{libname}}
 
+{{description}}
 
 ## 📦 Installation
 
@@ -13,3 +14,7 @@ yarn add {{libname}}
 # or
 npm install {{libname}} --save
 ```
+
+## 📜 Documentation
+
+TODO
