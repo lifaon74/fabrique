@@ -1,28 +1,27 @@
 import chalk from 'chalk';
 import { readFile, rename, writeFile } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
-import { explore } from '../helpers/fs/explore.js';
+import { exploreDirectorySequentially } from '../helpers/fs/explore-directory-sequentially.js';
 
 /**
  * Refactor recursively many files
  *
- * @param {string} cwd
  * @param {string} from
  * @param {string} to
  * @param {{dry?: boolean, cwd?: string }} options
  * @return {Promise<void>}
  */
 export async function refactor(from, to, { dry = false, cwd = process.cwd() }) {
-  const refactor = createRefactorFunction(from, to);
+  const refactorFnc = createRefactorFunction(from, to);
 
-  for await (const [path, stats] of explore(cwd)) {
-    if (stats.isFile()) {
-      await refactorFileContent(path, refactor, dry);
-      await refactorFileName(path, refactor, dry);
-    } else if (stats.isDirectory()) {
-      await refactorFileName(path, refactor, dry);
+  await exploreDirectorySequentially(cwd, async (entryPath, entry) => {
+    if (entry.isFile()) {
+      await refactorFileContent(entryPath, refactorFnc, dry);
+      await refactorFileName(entryPath, refactorFnc, dry);
+    } else if (entry.isDirectory()) {
+      return await refactorFileName(entryPath, refactorFnc, dry);
     }
-  }
+  });
 }
 
 /*----------*/

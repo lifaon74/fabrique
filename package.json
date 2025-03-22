@@ -1,6 +1,6 @@
 {
   "name": "fabrique",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "type": "module",
   "main": "./src/index.js",
   "bin": "./src/index.js",
@@ -19,12 +19,12 @@
     "type": "git",
     "url": "https://github.com/lifaon74/fabrique"
   },
-  "packageManager": "yarn@4.6.0",
+  "packageManager": "yarn@4.7.0",
   "devDependencies": {
-    "@inquirer/prompts": "^7.2.4",
-    "prettier": "^3.4.2",
+    "@inquirer/prompts": "^7.4.0",
+    "prettier": "^3.5.3",
     "prettier-plugin-organize-imports": "^4.1.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.2"
   },
   "dependencies": {
     "chalk": "^5.4.1",

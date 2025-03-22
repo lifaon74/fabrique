@@ -67,13 +67,13 @@ fabrique [CMD]
 #### create
 
 ```shell
-npx fabrique upgrade lib [name]
+npx fabrique create lib [name]
 ```
 
 ##### example
 
 ```shell
-npx fabrique create @my-company/my-library
+npx fabrique create lib @my-company/my-library
 ```
 
 ##### action
@@ -90,6 +90,7 @@ You'll be prompted for a description, author and git url.
 #### upgrade
 
 ```shell
+# from the root of a "fabrique" project
 npx fabrique upgrade
 ```
 
@@ -107,6 +108,7 @@ It tries to be non-destructive.
 #### refactor
 
 ```shell
+# from the directory we want to refactor
 npx fabrique refactor [from] [to]
 ```
 
@@ -116,10 +118,10 @@ npx fabrique refactor [from] [to]
 npx fabrique refactor my-component my-new-component
 ```
 
-> Refactors all files and directories containing `my-component` as name into `my-new-component` (recursively).
-> And all text content `my-component` (or derived cases) into `my-new-component` (keeping the same case).
+> Refactors all files and directories having `my-component` as name into `my-new-component` (recursively).
+> AND all text-based files (ex: html, js, ts, css, etc...) containing `my-component` (or derived cases) into `my-new-component` (keeping the same case).
 
-If we run it with the following files:
+If we run this command with the following files structure:
 
 - some-component
 - my-component
@@ -135,7 +137,7 @@ We get:
 - my-new-component-abc
   - my-new-component-abc.ts
 
-And with this file content:
+If `my-component.ts` has this content:
 
 ```ts
 class MyComponent {}
@@ -160,7 +162,7 @@ function my_new_component(myNewComponent: MyNewComponent) {}
 This command refactors files and directories recursively from the `cwd` (by default, the current directory in which the script is executed).
 It preserves the case of the names (ex: `dash-case`, or `cameCase`).
 
-> INFO: run the command inside the  folder that you want to refactor.
+> INFO: run the command inside the folder that you want to refactor.
 
 ##### options
 
@@ -175,15 +177,15 @@ It preserves the case of the names (ex: `dash-case`, or `cameCase`).
 npx fabrique verdaccio
 ```
 
-Installs and lauches [verdaccio](https://verdaccio.org/). This is useful to debug interdependent libraries.
+Installs and launches [verdaccio](https://verdaccio.org/). This is useful to debug interdependent libraries.
 
 Let's say we have:
 
 - a library `my-lib-a`
-- a library `my-lib-b` with `my-lib-a` as `dependency`
+- another library `my-lib-b` with `my-lib-a` as `dependency`
 
-If we're working on `my-lib-a`, and want to test if it works on `my-lib-b`, we'll publish a `dev` version of `my-lib-a` on a local `verdaccio`.
-And consume this dev version on `my-lib-b`.
+When working on `my-lib-a`, if we want to test if our changes works properly on `my-lib-b`, we'll publish a `dev` version of `my-lib-a` on a local `verdaccio`,
+then, we'll consume this dev version on `my-lib-b`.
 
 > We choose verdaccio instead of `npm link` because versions and dev packages are unique with a package registry.
 > 
