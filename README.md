@@ -47,7 +47,7 @@ The library requires [Node.js](https://nodejs.org/en) `22+` and [yarn](https://y
 We recommend to use [npx](https://docs.npmjs.com/cli/v8/commands/npx):
 
 ```shell
-npx fabrique [CMD]
+npx fabrique [cmd]
 ```
 
 But, you may prefer to install globally `fabrique`:
@@ -58,36 +58,41 @@ npm install -g fabrique
 And run a command with:
 
 ```shell
-fabrique [CMD]
+fabrique [cmd]
 ```
 
 
 ### List of commands
 
-#### create
+#### \[cmd\]: create
 
 ```shell
-npx fabrique create lib [name]
+npx fabrique create [type] [name]
 ```
 
-##### example
+##### \[type\]: lib
+
+###### example
 
 ```shell
 npx fabrique create lib @my-company/my-library
 ```
 
-##### action
+###### action
 
 This command creates a new library with the name `[name]` inside the folder `./[name]` (in our example: `./@my-company/my-library`).
 You'll be prompted for a description, author and git url.
 
 > INFO: run the command where you want to create your project.
 
-##### options
+###### options
 
 - `[name]`: the library name
 
-#### upgrade
+
+> NOTE: currently only the `lib` type is supported. More architectures may be developed in the future.
+
+#### \[cmd\]: upgrade
 
 ```shell
 # from the root of a "fabrique" project
@@ -105,7 +110,7 @@ It tries to be non-destructive.
 
 - `--force`: forces an upgrade even if the lib is not a `fabrique` project or if the version is identical. _Use with caution._
 
-#### refactor
+#### \[cmd\]: refactor
 
 ```shell
 # from the directory we want to refactor
@@ -171,7 +176,7 @@ It preserves the case of the names (ex: `dash-case`, or `cameCase`).
 - `--dry` (default: false): runs without modifying the files. This is useful to check if your refactoring is safe or not.
 - `--cwd` (default: current folder): specifies the directory to start from.
 
-#### verdaccio
+#### \[cmd\]: verdaccio
 
 ```shell
 npx fabrique verdaccio
@@ -192,7 +197,7 @@ then, we'll consume this dev version on `my-lib-b`.
 > Thus, we may have `my-lib-b` consuming `my-lib-a-dev.0` and `my-lib-c` consuming `my-lib-a-dev.1`, which is not possible with `npm link`.
 
 
-#### version
+#### --version
 
 ```shell
 npx fabrique --version
@@ -202,7 +207,7 @@ npx fabrique -v
 
 Returns the current `fabrique` version.
 
-#### help
+#### --help
 
 ```shell
 npx fabrique --help
