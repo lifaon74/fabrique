@@ -24,13 +24,13 @@
     "url": "{{giturl}}"
   },
   "devDependencies": {
-    "@types/node": "^22.13.11",
-    "@vitest/coverage-istanbul": "^3.0.9",
+    "@types/node": "^22.13.14",
+    "@vitest/coverage-istanbul": "^3.1.1",
     "prettier": "^3.5.3",
     "prettier-plugin-organize-imports": "^4.1.0",
     "typedoc": "^0.28.1",
     "typescript": "5.8.2",
-    "vitest": "^3.0.9"
+    "vitest": "^3.1.1"
   },
   "packageManager": "yarn@4.7.0"
 }
