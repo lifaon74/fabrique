@@ -40,7 +40,7 @@ install `prettier`, etc. With `fabrique` all comes in pre-configured.
 
 ### Requirements
 
-The library requires [Node.js](https://nodejs.org/en) `22+` and [yarn](https://yarnpkg.com/) `4+`.
+The library requires [Node.js](https://nodejs.org/en/download) `24+` and [yarn](https://yarnpkg.com/getting-started/install) `4+`.
 
 ### Installation
 
