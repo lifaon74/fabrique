@@ -1,6 +1,6 @@
 {
   "name": "fabrique",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "type": "module",
   "main": "./src/index.js",
   "bin": "./src/index.js",
@@ -19,9 +19,9 @@
     "type": "git",
     "url": "https://github.com/lifaon74/fabrique"
   },
-  "packageManager": "yarn@4.9.3",
+  "packageManager": "yarn@4.9.4",
   "devDependencies": {
-    "@inquirer/prompts": "^7.8.3",
+    "@inquirer/prompts": "^7.8.4",
     "prettier": "^3.6.2",
     "prettier-plugin-organize-imports": "^4.2.0",
     "typescript": "^5.9.2"
