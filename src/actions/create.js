@@ -46,7 +46,7 @@ export async function create(type, name) {
     libname: await input({ message: 'Library name', default: name, required: true }),
     description: await input({ message: 'Description' }),
     author: await input({ message: 'Author' }),
-    giturl: await input({ message: 'Git url' }),
+    giturl: normalizeGitUrl(await input({ message: 'Git url' })),
   };
 
   console.log(chalk.magentaBright('Initializing the library...'));
@@ -70,6 +70,26 @@ export async function create(type, name) {
 }
 
 /*---*/
+
+/**
+ * Transform a git url into a valid one.
+ * @param {string} input
+ * @return {string}
+ */
+function normalizeGitUrl(input) {
+  const gitUrl = new URL(input);
+
+  if (!gitUrl.pathname.endsWith('.git')) {
+    input = `${input}.git`;
+  }
+
+  if (!gitUrl.protocol.startsWith('git+')) {
+    input = `git+${input}`;
+  }
+
+  return input;
+}
+
 /**
  * Replaces the patterns `{{name}}` from all the files found inside `cwd`.
  *
