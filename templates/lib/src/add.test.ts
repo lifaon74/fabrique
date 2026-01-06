@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { add } from './add.js';
+import { add } from './add.ts';
 
 describe('add', () => {
   it('should return correct result', () => {
