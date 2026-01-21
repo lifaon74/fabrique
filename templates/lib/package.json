@@ -26,9 +26,9 @@
     "url": "{{giturl}}"
   },
   "devDependencies": {
-    "@types/node": "^25.0.7",
+    "@types/node": "^25.0.9",
     "@vitest/coverage-istanbul": "^4.0.17",
-    "prettier": "^3.7.4",
+    "prettier": "^3.8.0",
     "prettier-plugin-organize-imports": "^4.3.0",
     "typedoc": "^0.28.16",
     "typescript": "^5.9.3",
