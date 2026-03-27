@@ -3,10 +3,8 @@
   "compilerOptions": {
     "declaration": true,
     "declarationDir": "./dist",
+    "rootDir": "src",
     "outDir": "dist"
   },
-  "include": [
-    "src/index.ts",
-    "src/index.protected.ts"
-  ]
+  "include": ["src/index.ts", "src/index.protected.ts"]
 }
