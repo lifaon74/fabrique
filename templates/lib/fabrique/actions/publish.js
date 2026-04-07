@@ -33,7 +33,7 @@ export async function publish({ mode = 'prod' } = {}) {
     options.registry = 'http://localhost:4873';
     options.tag = 'dev';
   } else {
-    args.unshift(`--//registry.npmjs.org/:_authToken=$NPM_TOKEN`);
+    args.unshift(`--//registry.npmjs.org/:_authToken=$NPM_AUTH_TOKEN`);
     options.registry = 'https://registry.npmjs.org';
     options.access = 'public';
     options.extra = {

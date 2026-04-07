@@ -44,7 +44,7 @@ cp .env.example .env
 
 And replace the corresponding variables:
 
-- [NPM_TOKEN](https://docs.npmjs.com/creating-and-viewing-access-tokens)
+- [NPM_AUTH_TOKEN](https://docs.npmjs.com/creating-and-viewing-access-tokens)
 
 ### Code
 
