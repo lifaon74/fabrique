@@ -5,10 +5,19 @@
   "main": "src/cli/cli.ts",
   "bin": "src/cli/cli.ts",
   "scripts": {
-    "run": "node src/cli/cli.ts",
-    "link": "npm link",
-    "publish:lib": "npm publish --access public --registry https://registry.npmjs.org",
-    "format": "prettier --write --ignore-unknown --config ./.prettierrc \"__src/**/*.{js,jsx,ts,tsx,html,css,scss}\""
+    "=== DEV ===": "",
+    "fb:run": "node src/cli/cli.ts",
+    "fb:link": "npm link",
+    "=== BUILD ===": "",
+    "fb:build": "echo \"skip-build\"",
+    "=== CODE QUALITY ===": "",
+    "fb:format": "yarn format:fix",
+    "fb:format:check": "prettier --check --ignore-unknown --config .prettierrc \"./**/*.{js,jsx,ts,tsx,html,css,scss,json,md}\"",
+    "fb:format:fix": "prettier --write --ignore-unknown --config .prettierrc \"./**/*.{js,jsx,ts,tsx,html,css,scss,json,md}\"",
+    "fb:check": "yarn check:types && yarn format:check",
+    "fb:check:types": "tsc -p tsconfig.json --noEmit",
+    "=== CI ===": "",
+    "fb:ci:release": "node scripts/ci/publish/ci-publish.script.ts"
   },
   "description": "CLI to build a library",
   "keywords": [],
@@ -19,17 +28,17 @@
     "type": "git",
     "url": "https://github.com/lifaon74/fabrique"
   },
-  "packageManager": "yarn@4.14.1",
+  "packageManager": "yarn@4.15.0",
   "devDependencies": {
-    "@types/node": "^25.6.0",
+    "@types/node": "^25.9.1",
     "prettier": "^3.8.3",
     "prettier-plugin-organize-imports": "^4.3.0",
     "typescript": "^6.0.3",
     "zod": "^4.4.3"
   },
   "dependencies": {
-    "@inquirer/prompts": "^8.4.2",
+    "@inquirer/prompts": "^8.5.0",
     "chalk": "^5.6.2",
-    "commander": "^14.0.3"
+    "commander": "^15.0.0"
   }
 }

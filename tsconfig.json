@@ -56,7 +56,7 @@
     "erasableSyntaxOnly": true
   },
   "include": [
-    "__src/**/*.ts",
-    "src/**/*.ts"
+    "src/**/*.ts",
+    "ci/**/*.ts"
   ]
 }
