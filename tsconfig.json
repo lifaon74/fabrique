@@ -9,7 +9,7 @@
     "useDefineForClassFields": true,
     "skipLibCheck": true,
     "declaration": false,
-    "experimentalDecorators": true,
+    "experimentalDecorators": false,
     "emitDecoratorMetadata": false,
     "importHelpers": false,
     "noEmitHelpers": false,

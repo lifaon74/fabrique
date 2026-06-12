@@ -20,7 +20,7 @@ export interface ReleaseProjectOptions {
 }
 
 /**
- * Releases a npm package.
+ * Releases an npm package.
  */
 export function releaseProject({
   mode = 'prod',
@@ -32,13 +32,21 @@ export function releaseProject({
   return logger.asyncTask('release', async (logger: Logger): Promise<void> => {
     const inputPackageJson: PackageJson = await readPackageJsonFile(join(cwd, 'package.json'));
 
-    if (
-      inputPackageJson.scripts !== undefined &&
-      (inputPackageJson.scripts['fb:build'] !== undefined ||
-        inputPackageJson.scripts['build'] !== undefined)
-    ) {
+    if (hasScript(inputPackageJson, 'fb:test') || hasScript(inputPackageJson, 'test')) {
       const command: string =
-        inputPackageJson.scripts['fb:build'] !== undefined ? 'fb:build' : 'build';
+        hasScript(inputPackageJson, 'fb:test') !== undefined ? 'fb:test' : 'test';
+
+      await execCommandInherit(logger, 'yarn', ['run', command], {
+        env: process.env,
+        cwd,
+      });
+    } else {
+      logger.warn('No test script found. Skipping test.');
+    }
+
+    if (hasScript(inputPackageJson, 'fb:build') || hasScript(inputPackageJson, 'build')) {
+      const command: string =
+        hasScript(inputPackageJson, 'fb:build') !== undefined ? 'fb:build' : 'build';
 
       await execCommandInherit(
         logger,
@@ -109,4 +117,10 @@ export function releaseProject({
       }
     }
   });
+}
+
+/* INTERNAL */
+
+function hasScript(packageJson: PackageJson, scriptName: string): boolean {
+  return packageJson.scripts !== undefined && packageJson.scripts[scriptName] !== undefined;
 }

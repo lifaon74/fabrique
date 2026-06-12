@@ -120,34 +120,32 @@ async function upgradeProjectFiles({
 }: UpgradeProjectFilesOptions): Promise<void> {
   templateDirectory = removeTrailingSlash(templateDirectory);
 
-  await rm(join(projectDirectory, 'fabrique'), {
-    force: true,
-    recursive: true,
-  });
-
-  // files to exclude
-  const exclude: readonly RegExp[] = [
-    /^src(?:[\\\/].*)?$/,
-    /^README\.md$/,
-    /^LICENSE$/,
-    /^package\.json$/,
-    /^yarn\.lock$/,
-  ];
+  await Promise.all(
+    ['fabrique', 'tsconfig.build.json', '.env.example'].map((entry: string): Promise<void> => {
+      return rm(join(projectDirectory, entry), {
+        force: true,
+        recursive: true,
+      });
+    }),
+  );
 
   for await (const entry of glob(`${templateDirectory}/**/*`, {
     withFileTypes: true,
+    exclude: ['src/**/*', 'README.md', 'LICENSE', 'package.json', 'yarn.lock'].map(
+      (entry: string): string => {
+        return `${templateDirectory}/${entry}`;
+      },
+    ),
   })) {
     const entryPath: string = join(entry.parentPath, entry.name);
     const entryRelativePath: string = relative(templateDirectory, entryPath);
     const entryDestinationPath: string = join(projectDirectory, entryRelativePath);
 
-    if (exclude.every((exclude: RegExp): boolean => !exclude.test(entryRelativePath))) {
-      if (entry.isFile()) {
-        logger.info('override:', entryRelativePath);
-        await writeFileSafe(entryDestinationPath, await readFile(entryPath, { encoding: 'utf8' }));
-      } else if (entry.isDirectory()) {
-        await mkdir(entryDestinationPath, { recursive: true });
-      }
+    if (entry.isFile()) {
+      logger.info('override:', entryRelativePath);
+      await writeFileSafe(entryDestinationPath, await readFile(entryPath, { encoding: 'utf8' }));
+    } else if (entry.isDirectory()) {
+      await mkdir(entryDestinationPath, { recursive: true });
     }
   }
 }
@@ -174,16 +172,23 @@ async function upgradeProjectPackage({
     join(templateDirectory, 'package.json'),
   );
 
+  const customScripts = Object.entries(projectPackage.scripts ?? {}).filter(
+    ([key]: [string, string]): boolean => {
+      return !key.startsWith('fb:') && !key.startsWith('=== FB:');
+    },
+  );
+
   const newPackageJson: PackageJson = {
     ...templatePackage,
     ...projectPackage,
     scripts: {
-      ...Object.fromEntries(
-        Object.entries(projectPackage.scripts ?? {}).filter(([key]: [string, string]): boolean => {
-          return !key.startsWith('fb:');
-        }),
-      ),
       ...templatePackage.scripts,
+      ...(customScripts.length === 0
+        ? {}
+        : {
+            '=== FB: CUSTOM SCRIPTS ===': '',
+            ...Object.fromEntries(customScripts),
+          }),
     },
     devDependencies: {
       ...projectPackage.devDependencies,
