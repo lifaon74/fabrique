@@ -13,7 +13,7 @@
     "fb:check": "yarn fb:check:types && yarn fb:format:check",
     "fb:check:types": "tsc -p tsconfig.json --noEmit",
     "=== FB: CI ===": "",
-    "fb:ci:release": "fabrique ci:release",
+    "fb:ci:release": "fabrique ci release",
     "=== FB: TEST ===": "",
     "fb:test": "vitest",
     "fb:test:coverage": "vitest run --coverage",

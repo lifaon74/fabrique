@@ -9,19 +9,38 @@ import { getEnvCiReleaseDryRun } from '../../../helpers.private/release/env/get-
 import type { ReleaseMode } from '../../../helpers.private/release/release-mode/release-mode.ts';
 import { releaseProject } from '../release-project/release-project.ts';
 
-export interface CiReleaseOptions {
+export interface CiWorkflowOptions {
+  readonly type: 'release' | string;
   readonly logger: Logger;
 }
 
 /**
- * Releases a package from the CI.
+ * Runs a CI workflow.
  */
-export async function ciRelease({ logger }: CiReleaseOptions): Promise<void> {
-  logger.debug('ci:release');
+export async function ciWorkflow({ type, logger }: CiWorkflowOptions): Promise<void> {
+  return logger.asyncTask('ci', async (logger: Logger): Promise<void> => {
+    loadOptionallyEnvFile(logger);
 
-  loadOptionallyEnvFile(logger);
+    const githubCiConfig: GithubCiConfig = getEnvGithubCiConfig();
 
-  const githubCiConfig: GithubCiConfig = getEnvGithubCiConfig();
+    switch (type) {
+      case 'release':
+        await ciRelease({ githubCiConfig, logger });
+        break;
+      default:
+        throw new Error(`Unknown type ${type}.`);
+    }
+  });
+}
+
+/* INTERNAL */
+
+interface CiReleaseOptions {
+  readonly githubCiConfig: GithubCiConfig;
+  readonly logger: Logger;
+}
+
+async function ciRelease({ githubCiConfig, logger }: CiReleaseOptions): Promise<void> {
   const ciReleaseContext: CiReleaseContext = inferCiReleaseContext(githubCiConfig);
   const dryRun: boolean = getEnvCiReleaseDryRun();
   // const jobUrl: string = `${githubCiConfig.server_url}/${githubCiConfig.repository}/actions/runs/${githubCiConfig.run_id}`;
@@ -39,8 +58,6 @@ export async function ciRelease({ logger }: CiReleaseOptions): Promise<void> {
     logger,
   });
 }
-
-/* INTERNAL */
 
 interface CiReleaseContext {
   readonly branchName: string;

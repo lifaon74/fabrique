@@ -9,7 +9,7 @@ import { Logger } from '../helpers.private/log/logger.ts';
 import { releaseModeSchema } from '../helpers.private/release/release-mode/release-mode.schema.ts';
 import type { ReleaseMode } from '../helpers.private/release/release-mode/release-mode.ts';
 import { buildProject } from './actions.private/build-project/build-project.ts';
-import { ciRelease } from './actions.private/ci-release/ci-release.ts';
+import { ciWorkflow } from './actions.private/ci-workflow/ci-workflow.ts';
 import { createProject } from './actions.private/create-project/create-project.ts';
 import { refactor } from './actions.private/refactor/refactor.ts';
 import { releaseProject } from './actions.private/release-project/release-project.ts';
@@ -80,12 +80,14 @@ program
     },
   );
 
-// CMD: ci:release
+// CMD: ci
 program
-  .command('ci:release')
-  .description('releases a package from the CI (e.g. GitHub Actions).')
-  .action((): Promise<void> => {
-    return ciRelease({
+  .command('ci')
+  .argument('<type>', 'type')
+  .description('runs a CI workflow.')
+  .action((type: string): Promise<void> => {
+    return ciWorkflow({
+      type,
       logger,
     });
   });
