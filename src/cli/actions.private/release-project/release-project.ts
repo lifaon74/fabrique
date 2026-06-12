@@ -3,8 +3,6 @@ import process from 'node:process';
 import { execCommandInherit } from '../../../helpers.private/cmd/exec-command.ts';
 import type { PackageJson } from '../../../helpers.private/file/package-json/package-json.ts';
 import { readPackageJsonFile } from '../../../helpers.private/file/package-json/read-package-json-file.ts';
-import { gitTagAndPush } from '../../../helpers.private/git/git-tag-and-push.ts';
-import { setUpGitConfig } from '../../../helpers.private/git/set-up-git-config.ts';
 import type { Logger } from '../../../helpers.private/log/logger.ts';
 import { isNpmPackagePublished } from '../../../helpers.private/npm/is-npm-version-published/is-npm-package-published.ts';
 import { toAbsolutePath } from '../../../helpers.private/path/to-absolute-path.ts';
@@ -109,17 +107,18 @@ export function releaseProject({
         logger.debug(`(dry) git tag -a ${tag}`);
         logger.debug('(dry) git push --tags');
       } else {
-        await setUpGitConfig({
-          logger,
-          cwd,
-        });
-
-        await gitTagAndPush({
-          tag,
-          message: `release ${tag}`,
-          cwd,
-          logger,
-        });
+        // TODO => add tag support
+        // await setUpGitConfig({
+        //   logger,
+        //   cwd,
+        // });
+        //
+        // await gitTagAndPush({
+        //   tag,
+        //   message: `release ${tag}`,
+        //   cwd,
+        //   logger,
+        // });
       }
     }
   });
