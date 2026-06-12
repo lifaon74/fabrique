@@ -5,8 +5,8 @@
 
 # Fabrique
 
-`fabrique` is a **cli to create and build libraries**,
-letting the user **focus on the functionalities** of its library, instead of the build process.
+`fabrique` is a **cli to create, build and publish libraries**,
+letting the user **focus on the functionalities** of its library, instead of the build/publish process.
 
 With `fabrique` you'll be able to:
 
@@ -17,16 +17,12 @@ With `fabrique` you'll be able to:
   - and debug it
 - upgrade any Fabrique project to get the last functionalities in one command line.
 
-`fabrique` is not intended to provide ci scripts and pipelines to automate the processes.
-Instead, it gives a uniform and simple entry point for everyone, to publish rapidly our own libraries,
-on which we may add automation, scripts, and complexity.
-
 > `fabrique` is the French word for "made/factory"
 
 ## Motivation
 
-When we develop javascript/typescript libraries, we frequently  create new repositories,
-and maintains the scripts to build, test, and debug them.
+When we develop javascript/typescript libraries, we frequently create new repositories 
+and maintain the scripts to build, test, and debug them.
 This tends to become rapidly cumbersome, especially when their number grows.
 We may choose to opt in for a _monorepo_, and I'll tell you: yes, in many cases, this is the optimal solution.
 However, in many other cases, one library per-repo makes sense, and this is where `fabrique` comes in.
@@ -44,17 +40,18 @@ The library requires [Node.js](https://nodejs.org/en/download) `24+` and [yarn](
 
 ### Installation
 
-We recommend to use [npx](https://docs.npmjs.com/cli/v8/commands/npx):
+We recommend using [npx](https://docs.npmjs.com/cli/v8/commands/npx):
 
 ```shell
 npx fabrique [cmd]
 ```
 
-But, you may prefer to install globally `fabrique`:
+But you may prefer to install globally `fabrique`:
 
 ```shell
 npm install -g fabrique
 ```
+
 And run a command with:
 
 ```shell
@@ -75,12 +72,12 @@ npx fabrique create [type] [name]
 ###### example
 
 ```shell
-npx fabrique create lib @my-company/my-library
+npx fabrique create lib @my-organization/my-library
 ```
 
 ###### action
 
-This command creates a new library with the name `[name]` inside the folder `./[name]` (in our example: `./@my-company/my-library`).
+This command creates a new library with the name `[name]` inside the folder `./[name]` (in our example: `./@my-organization/my-library`).
 You'll be prompted for a description, author and git url.
 
 > INFO: run the command where you want to create your project.
@@ -167,7 +164,7 @@ function my_new_component(myNewComponent: MyNewComponent) {}
 This command refactors files and directories recursively from the `cwd` (by default, the current directory in which the script is executed).
 It preserves the case of the names (ex: `dash-case`, or `cameCase`).
 
-> INFO: run the command inside the folder that you want to refactor.
+> INFO: run the command inside the folder you want to refactor.
 
 ##### options
 
@@ -175,26 +172,6 @@ It preserves the case of the names (ex: `dash-case`, or `cameCase`).
 - `[to]`: the "destination" text to refactor. Must be `dash-case`.
 - `--dry` (default: false): runs without modifying the files. This is useful to check if your refactoring is safe or not.
 - `--cwd` (default: current folder): specifies the directory to start from.
-
-#### \[cmd\]: verdaccio
-
-```shell
-npx fabrique verdaccio
-```
-
-Installs and launches [verdaccio](https://verdaccio.org/). This is useful to debug interdependent libraries.
-
-Let's say we have:
-
-- a library `my-lib-a`
-- another library `my-lib-b` with `my-lib-a` as `dependency`
-
-When working on `my-lib-a`, if we want to test if our changes works properly on `my-lib-b`, we'll publish a `dev` version of `my-lib-a` on a local `verdaccio`,
-then, we'll consume this dev version on `my-lib-b`.
-
-> We choose verdaccio instead of `npm link` because versions and dev packages are unique with a package registry.
-> 
-> Thus, we may have `my-lib-b` consuming `my-lib-a-dev.0` and `my-lib-c` consuming `my-lib-a-dev.1`, which is not possible with `npm link`.
 
 
 #### --version

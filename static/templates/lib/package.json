@@ -1,13 +1,9 @@
 {
-  "name": "fabrique",
-  "version": "2.0.0",
+  "name": "{{libname}}",
+  "version": "0.0.1",
   "type": "module",
-  "main": "src/cli/cli.ts",
-  "bin": "src/cli/cli.ts",
+  "main": "./index.js",
   "scripts": {
-    "=== FB: DEV ===": "",
-    "fb:run": "node src/cli/cli.ts",
-    "fb:link": "npm link",
     "=== FB: BUILD ===": "",
     "fb:build": "fabrique build",
     "=== FB: CODE QUALITY ===": "",
@@ -17,28 +13,31 @@
     "fb:check": "yarn fb:check:types && yarn fb:format:check",
     "fb:check:types": "tsc -p tsconfig.json --noEmit",
     "=== FB: CI ===": "",
-    "fb:ci:release": "fabrique ci release"
+    "fb:ci:release": "fabrique ci release",
+    "=== FB: TEST ===": "",
+    "fb:test": "vitest",
+    "fb:test:coverage": "vitest run --coverage",
+    "fb:bench": "vitest bench",
+    "=== FB: DOC ===": "",
+    "fb:typedoc": "typedoc --options typedoc.json --tsconfig tsconfig.json"
   },
-  "description": "CLI to build a library",
+  "description": "{{description}}",
   "keywords": [],
-  "author": "Valentin Richard",
+  "author": "{{author}}",
   "license": "MIT",
   "access": "public",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lifaon74/fabrique"
+    "url": "{{giturl}}"
   },
-  "packageManager": "yarn@4.16.0",
   "devDependencies": {
     "@types/node": "^25.9.3",
+    "@vitest/coverage-istanbul": "^4.1.8",
     "prettier": "^3.8.4",
     "prettier-plugin-organize-imports": "^4.3.0",
+    "typedoc": "^0.28.19",
     "typescript": "^6.0.3",
-    "zod": "^4.4.3"
+    "vitest": "^4.1.8"
   },
-  "dependencies": {
-    "@inquirer/prompts": "^8.5.2",
-    "chalk": "^5.6.2",
-    "commander": "^15.0.0"
-  }
+  "packageManager": "yarn@4.16.0"
 }

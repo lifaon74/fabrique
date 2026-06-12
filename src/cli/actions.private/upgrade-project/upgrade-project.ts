@@ -1,0 +1,223 @@
+import { confirm, select } from '@inquirer/prompts';
+import { cp, glob, rm } from 'node:fs/promises';
+import { join, relative } from 'node:path';
+import { execCommandInherit } from '../../../helpers.private/cmd/exec-command.ts';
+import type { FabriqueConfig } from '../../../helpers.private/fabrique/fabrique-config.ts';
+import type { PackageJson } from '../../../helpers.private/file/package-json/package-json.ts';
+import { readPackageJsonFile } from '../../../helpers.private/file/package-json/read-package-json-file.ts';
+import { writeJsonFileSafe } from '../../../helpers.private/file/write-json-file-safe.ts';
+import { gitAddAllFiles } from '../../../helpers.private/git/git-add-all-files.ts';
+import type { Logger } from '../../../helpers.private/log/logger.ts';
+import { listAvailableTemplates } from '../../../helpers.private/misc/list-available-templates.ts';
+import {
+  ROOT_DIRECTORY,
+  getTemplateDirectoryPath,
+} from '../../../helpers.private/misc/paths.constant.ts';
+import { removeTrailingSlash } from '../../../helpers.private/path/remove-traling-slash.ts';
+
+export interface UpgradeProjectOptions {
+  readonly force?: boolean;
+  readonly logger: Logger;
+}
+
+/**
+ * Upgrades an existing project.
+ */
+export function upgradeProject({ force = false, logger }: UpgradeProjectOptions): Promise<void> {
+  return logger.asyncTask('upgrade', async (logger: Logger): Promise<void> => {
+    const projectDirectory: string = process.cwd();
+
+    const version: string = (await readPackageJsonFile(join(ROOT_DIRECTORY, 'package.json')))
+      .version;
+    const projectPackage: PackageJson = await readPackageJsonFile(
+      join(projectDirectory, 'package.json'),
+    );
+
+    const templates: readonly string[] = await listAvailableTemplates();
+    let type;
+
+    if (Object.hasOwn(projectPackage, 'fabrique')) {
+      const fabriqueConfig: FabriqueConfig = projectPackage.fabrique!;
+      type = fabriqueConfig.type;
+
+      if (!templates.includes(type)) {
+        throw new Error(`type must be one of the following: ${templates.join(', ')}.`);
+      }
+
+      if (!force && fabriqueConfig.version === version) {
+        logger.warn('Library already up-to-date.');
+        if (
+          !(await confirm({
+            message: 'Force the update ?',
+            default: false,
+          }))
+        ) {
+          return;
+        }
+      }
+    } else {
+      if (!force) {
+        logger.warn('Not a "fabrique" lib.');
+        if (
+          !(await confirm({
+            message: 'Upgrade anyway ?',
+            default: true,
+          }))
+        ) {
+          return;
+        }
+      }
+      type = await select({
+        message: 'Select a type',
+        choices: templates.map((template) => {
+          return {
+            value: template,
+          };
+        }),
+        default: templates[0],
+      });
+    }
+
+    await logger.asyncTask('upgrade', async (logger: Logger): Promise<void> => {
+      const templateDirectory: string = getTemplateDirectoryPath(type);
+
+      await Promise.all([
+        upgradeProjectFiles({ templateDirectory, projectDirectory, logger }),
+        upgradeProjectPackage({
+          templateDirectory,
+          projectDirectory,
+          projectPackage,
+          fabriqueConfig: {
+            version,
+            type,
+          },
+          logger,
+        }),
+      ]);
+
+      // update dependencies
+      await execCommandInherit(logger, 'yarn', [], {
+        cwd: projectDirectory,
+      });
+
+      // add new file to commit
+      await gitAddAllFiles({ logger });
+    });
+
+    logger.info(`Library ${JSON.stringify(projectPackage.name)} updated.`);
+  });
+}
+
+/* INTERNAL */
+
+interface UpgradeProjectFilesOptions {
+  readonly templateDirectory: string;
+  readonly projectDirectory: string;
+  readonly logger: Logger;
+}
+
+async function upgradeProjectFiles({
+  templateDirectory,
+  projectDirectory,
+  logger,
+}: UpgradeProjectFilesOptions): Promise<void> {
+  templateDirectory = removeTrailingSlash(templateDirectory);
+
+  await Promise.all(
+    ['.yarn', 'fabrique', 'tsconfig.build.json', '.env.example'].map(
+      (entry: string): Promise<void> => {
+        return rm(join(projectDirectory, entry), {
+          force: true,
+          recursive: true,
+        });
+      },
+    ),
+  );
+
+  for await (const entry of glob(
+    [
+      `${templateDirectory}/**/*`,
+      // NOTE: node 24 glob skips dot files => https://github.com/nodejs/node/issues/56321
+      `${templateDirectory}/**/.*/**/*`,
+      `${templateDirectory}/**/.*`,
+      `${templateDirectory}/**/.*/**/*.`,
+    ],
+    {
+      withFileTypes: true,
+      exclude: [
+        'src/**/*',
+        'README.md',
+        'LICENSE',
+        'package.json',
+        'yarn.lock',
+        '.github/auto_assign.yml',
+      ].map((entry: string): string => {
+        return `${templateDirectory}/${entry}`;
+      }),
+    },
+  )) {
+    const entryPath: string = join(entry.parentPath, entry.name);
+    const entryRelativePath: string = relative(templateDirectory, entryPath);
+    const entryDestinationPath: string = join(projectDirectory, entryRelativePath);
+
+    if (entry.isFile()) {
+      logger.info('override:', entryRelativePath);
+      await cp(entryPath, entryDestinationPath, {
+        force: true,
+      });
+    }
+  }
+}
+
+interface UpgradeProjectPackageOptions {
+  readonly templateDirectory: string;
+  readonly projectDirectory: string;
+  readonly projectPackage: PackageJson;
+  readonly fabriqueConfig: FabriqueConfig;
+  readonly logger: Logger;
+}
+
+/**
+ * Upgrades the destination `package.json`.
+ */
+async function upgradeProjectPackage({
+  templateDirectory,
+  projectDirectory,
+  projectPackage,
+  fabriqueConfig,
+  logger,
+}: UpgradeProjectPackageOptions): Promise<void> {
+  const templatePackage: PackageJson = await readPackageJsonFile(
+    join(templateDirectory, 'package.json'),
+  );
+
+  const customScripts = Object.entries(projectPackage.scripts ?? {}).filter(
+    ([key]: [string, string]): boolean => {
+      return !key.startsWith('fb:') && !key.startsWith('=== FB:');
+    },
+  );
+
+  const newPackageJson: PackageJson = {
+    ...templatePackage,
+    ...projectPackage,
+    scripts: {
+      ...templatePackage.scripts,
+      ...(customScripts.length === 0
+        ? {}
+        : {
+            '=== FB: CUSTOM SCRIPTS ===': '',
+            ...Object.fromEntries(customScripts),
+          }),
+    },
+    devDependencies: {
+      ...projectPackage.devDependencies,
+      ...templatePackage.devDependencies,
+    },
+    packageManager: templatePackage.packageManager,
+    fabrique: fabriqueConfig,
+  };
+
+  logger.info('merge: package.json');
+
+  await writeJsonFileSafe(join(projectDirectory, 'package.json'), newPackageJson);
+}
