@@ -1,4 +1,4 @@
 ## TODO
 
-- [ ] migrate to OIDC: https://docs.npmjs.com/trusted-publishers
-- [ ] copy `templates` into the output dist
+- [x] migrate to OIDC: https://docs.npmjs.com/trusted-publishers
+- [ ] update CONTRIBUTING.md file
