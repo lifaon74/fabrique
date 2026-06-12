@@ -153,8 +153,12 @@ async function updatePackageWithFabriqueConfig({
 }: UpdatePackageWithFabriqueConfigOptions): Promise<void> {
   const packageJsonPath: string = join(packageDirectory, 'package.json');
   const packageJson: PackageJson = await readPackageJsonFile(packageJsonPath);
-  const newPackageJson = {
+  const newPackageJson: PackageJson = {
     ...packageJson,
+    devDependencies: {
+      ...packageJson.devDependencies,
+      fabrique: fabriqueConfig.version,
+    },
     fabrique: fabriqueConfig,
   };
   await writeJsonFileSafe(packageJsonPath, newPackageJson);

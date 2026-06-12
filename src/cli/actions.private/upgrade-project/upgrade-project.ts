@@ -212,6 +212,7 @@ async function upgradeProjectPackage({
     devDependencies: {
       ...projectPackage.devDependencies,
       ...templatePackage.devDependencies,
+      fabrique: fabriqueConfig.version,
     },
     packageManager: templatePackage.packageManager,
     fabrique: fabriqueConfig,
