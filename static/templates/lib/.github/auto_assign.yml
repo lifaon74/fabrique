@@ -5,6 +5,6 @@ addAssignees: author
 # Add reviewers to the pull requests
 addReviewers: true
 reviewers:
-  - lifaon74
+  - {{reviewer}}
 numberOfReviewers: 0
 

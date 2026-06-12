@@ -1,12 +1,12 @@
 import { confirm, select } from '@inquirer/prompts';
-import { glob, mkdir, readFile, rm } from 'node:fs/promises';
+import { cp, glob, rm } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { execCommandInherit } from '../../../helpers.private/cmd/exec-command.ts';
 import type { FabriqueConfig } from '../../../helpers.private/fabrique/fabrique-config.ts';
 import type { PackageJson } from '../../../helpers.private/file/package-json/package-json.ts';
 import { readPackageJsonFile } from '../../../helpers.private/file/package-json/read-package-json-file.ts';
-import { writeFileSafe } from '../../../helpers.private/file/write-file-safe.ts';
 import { writeJsonFileSafe } from '../../../helpers.private/file/write-json-file-safe.ts';
+import { gitAddAllFiles } from '../../../helpers.private/git/git-add-all-files.ts';
 import type { Logger } from '../../../helpers.private/log/logger.ts';
 import { listAvailableTemplates } from '../../../helpers.private/misc/list-available-templates.ts';
 import {
@@ -99,6 +99,9 @@ export function upgradeProject({ force = false, logger }: UpgradeProjectOptions)
       await execCommandInherit(logger, 'yarn', [], {
         cwd: projectDirectory,
       });
+
+      // add new file to commit
+      await gitAddAllFiles({ logger });
     });
 
     logger.info(`Library ${JSON.stringify(projectPackage.name)} updated.`);
@@ -121,31 +124,47 @@ async function upgradeProjectFiles({
   templateDirectory = removeTrailingSlash(templateDirectory);
 
   await Promise.all(
-    ['fabrique', 'tsconfig.build.json', '.env.example'].map((entry: string): Promise<void> => {
-      return rm(join(projectDirectory, entry), {
-        force: true,
-        recursive: true,
-      });
-    }),
-  );
-
-  for await (const entry of glob(`${templateDirectory}/**/*`, {
-    withFileTypes: true,
-    exclude: ['src/**/*', 'README.md', 'LICENSE', 'package.json', 'yarn.lock'].map(
-      (entry: string): string => {
-        return `${templateDirectory}/${entry}`;
+    ['.yarn', 'fabrique', 'tsconfig.build.json', '.env.example'].map(
+      (entry: string): Promise<void> => {
+        return rm(join(projectDirectory, entry), {
+          force: true,
+          recursive: true,
+        });
       },
     ),
-  })) {
+  );
+
+  for await (const entry of glob(
+    [
+      `${templateDirectory}/**/*`,
+      // NOTE: node 24 glob skips dot files => https://github.com/nodejs/node/issues/56321
+      `${templateDirectory}/**/.*/**/*`,
+      `${templateDirectory}/**/.*`,
+      `${templateDirectory}/**/.*/**/*.`,
+    ],
+    {
+      withFileTypes: true,
+      exclude: [
+        'src/**/*',
+        'README.md',
+        'LICENSE',
+        'package.json',
+        'yarn.lock',
+        '.github/auto_assign.yml',
+      ].map((entry: string): string => {
+        return `${templateDirectory}/${entry}`;
+      }),
+    },
+  )) {
     const entryPath: string = join(entry.parentPath, entry.name);
     const entryRelativePath: string = relative(templateDirectory, entryPath);
     const entryDestinationPath: string = join(projectDirectory, entryRelativePath);
 
     if (entry.isFile()) {
       logger.info('override:', entryRelativePath);
-      await writeFileSafe(entryDestinationPath, await readFile(entryPath, { encoding: 'utf8' }));
-    } else if (entry.isDirectory()) {
-      await mkdir(entryDestinationPath, { recursive: true });
+      await cp(entryPath, entryDestinationPath, {
+        force: true,
+      });
     }
   }
 }

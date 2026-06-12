@@ -51,11 +51,18 @@ export function createProject({ type, name, logger }: CreateProjectOptions): Pro
       }
     }
 
+    const libname: string = await input({ message: 'Library name', default: name, required: true });
+    const description: string = await input({ message: 'Description' });
+    const reviewer: string = await input({ message: 'Reviewer', required: true });
+    const author: string = await input({ message: 'Author', default: reviewer });
+    const giturl: string = normalizeGitUrlForNpm(await input({ message: 'Git url' }));
+
     const values = {
-      libname: await input({ message: 'Library name', default: name, required: true }),
-      description: await input({ message: 'Description' }),
-      author: await input({ message: 'Author' }),
-      giturl: normalizeGitUrlForNpm(await input({ message: 'Git url' })),
+      libname,
+      description,
+      reviewer,
+      author,
+      giturl,
     };
 
     await logger.asyncTask('initialize', async (logger: Logger): Promise<void> => {

@@ -41,7 +41,7 @@ export function releaseProject({
         cwd,
       });
     } else {
-      logger.warn('No test script found. Skipping test.');
+      logger.warn('SKIP (non-blocking): test script not found.');
     }
 
     if (hasScript(inputPackageJson, 'fb:build') || hasScript(inputPackageJson, 'build')) {
