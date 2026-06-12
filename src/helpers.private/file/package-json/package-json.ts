@@ -14,6 +14,7 @@ export interface PackageJson {
   readonly packageManager?: string;
   // entry points
   readonly main?: string;
+  readonly bin?: string;
   readonly module?: string;
   readonly types?: string;
   readonly exports?: PackageJsonExports;

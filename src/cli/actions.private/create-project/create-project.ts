@@ -61,7 +61,7 @@ export function createProject({ type, name, logger }: CreateProjectOptions): Pro
     await logger.asyncTask('initialize', async (logger: Logger): Promise<void> => {
       await cp(templateDirectory, projectDirectory, { recursive: true });
 
-      await replacePatterns({ projectDirectory: projectDirectory, values });
+      await replacePatterns({ projectDirectory, values });
 
       const version: string = (await readPackageJsonFile(join(ROOT_DIRECTORY, 'package.json')))
         .version;

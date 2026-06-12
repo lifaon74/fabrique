@@ -46,6 +46,10 @@ export class Logger {
     this.report('debug', args);
   }
 
+  note(...args: unknown[]): void {
+    this.report('note', args);
+  }
+
   warn(...args: unknown[]): void {
     this.report('warn', args);
   }
@@ -73,7 +77,7 @@ export class Logger {
     name: string,
     callback: (logger: Logger) => PromiseLike<GReturn> | GReturn,
     {
-      startLevel = 'info',
+      startLevel = 'note',
       successLevel = startLevel,
       errorLevel = 'error',
       timer = true,

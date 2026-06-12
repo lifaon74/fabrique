@@ -9,15 +9,15 @@
     "fb:run": "node src/cli/cli.ts",
     "fb:link": "npm link",
     "=== BUILD ===": "",
-    "fb:build": "echo \"skip-build\"",
+    "fb:build": "fabrique build",
     "=== CODE QUALITY ===": "",
     "fb:format": "yarn format:fix",
     "fb:format:check": "prettier --check --ignore-unknown --config .prettierrc \"./**/*.{js,jsx,ts,tsx,html,css,scss,json,md}\"",
     "fb:format:fix": "prettier --write --ignore-unknown --config .prettierrc \"./**/*.{js,jsx,ts,tsx,html,css,scss,json,md}\"",
-    "fb:check": "yarn check:types && yarn format:check",
+    "fb:check": "yarn fb:check:types && yarn fb:format:check",
     "fb:check:types": "tsc -p tsconfig.json --noEmit",
     "=== CI ===": "",
-    "fb:ci:release": "node scripts/ci/publish/ci-publish.script.ts"
+    "fb:ci:release": "node ci/release/ci-release.script.ts"
   },
   "description": "CLI to build a library",
   "keywords": [],
@@ -28,16 +28,16 @@
     "type": "git",
     "url": "https://github.com/lifaon74/fabrique"
   },
-  "packageManager": "yarn@4.15.0",
+  "packageManager": "yarn@4.16.0",
   "devDependencies": {
-    "@types/node": "^25.9.1",
-    "prettier": "^3.8.3",
+    "@types/node": "^25.9.3",
+    "prettier": "^3.8.4",
     "prettier-plugin-organize-imports": "^4.3.0",
     "typescript": "^6.0.3",
     "zod": "^4.4.3"
   },
   "dependencies": {
-    "@inquirer/prompts": "^8.5.0",
+    "@inquirer/prompts": "^8.5.2",
     "chalk": "^5.6.2",
     "commander": "^15.0.0"
   }

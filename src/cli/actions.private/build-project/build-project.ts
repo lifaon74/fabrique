@@ -1,17 +1,17 @@
 import { rm } from 'node:fs/promises';
-import { isAbsolute, join, relative } from 'node:path';
 import process from 'node:process';
-import { generateTypescriptIndexFile } from '../../../helpers.private/build/generate-typescript-index-file.ts';
-import { execCommandInherit } from '../../../helpers.private/cmd/exec-command.ts';
+import type { BuildMode } from '../../../helpers.private/build/build-mode/build-mode.ts';
+import {
+  buildTypescriptProject,
+  type BuildTypescriptProjectOptions,
+} from '../../../helpers.private/build/typescript/build-typescript-project.ts';
 import type { PackageJson } from '../../../helpers.private/file/package-json/package-json.ts';
 import { readPackageJsonFile } from '../../../helpers.private/file/package-json/read-package-json-file.ts';
-import { writeJsonFileSafe } from '../../../helpers.private/file/write-json-file-safe.ts';
 import type { Logger } from '../../../helpers.private/log/logger.ts';
-import { removeTrailingSlash } from '../../../helpers.private/path/remove-traling-slash.ts';
-import type { ReleaseMode } from '../../../helpers.private/release/release-mode/release-mode.ts';
+import { toAbsolutePath } from '../../../helpers.private/path/to-absolute-path.ts';
 
 export interface BuildProjectOptions {
-  readonly mode?: ReleaseMode;
+  readonly mode?: BuildMode;
   readonly cwd?: string;
   readonly output?: string;
   readonly logger: Logger;
@@ -23,13 +23,16 @@ export interface BuildProjectOptions {
 export function buildProject({
   mode = 'prod',
   cwd = process.cwd(),
-  output = join(cwd, 'dist'),
+  output = 'dist',
   logger,
 }: BuildProjectOptions): Promise<void> {
   return logger.asyncTask('build', async (logger: Logger): Promise<void> => {
-    cwd = removeTrailingSlash(cwd);
+    await rm(toAbsolutePath(output, cwd), {
+      force: true,
+      recursive: true,
+    });
 
-    const packageJson: PackageJson = await readPackageJsonFile(join(cwd, 'package.json'));
+    const packageJson: PackageJson = await readPackageJsonFile(toAbsolutePath('package.json', cwd));
 
     const type: string = packageJson.fabrique?.type ?? 'lib';
 
@@ -39,6 +42,7 @@ export function buildProject({
           sourceDirectory: 'src',
           outputDirectory: output,
           cwd,
+          mode,
           logger,
         });
         break;
@@ -50,85 +54,16 @@ export function buildProject({
 
 /* ==== INTERNAL ==== */
 
-interface BuildLibProjectOptions extends Omit<BuildTypescriptProjectOptions, 'sourceDirectory'> {}
-
-async function buildLibProject(options: BuildLibProjectOptions): Promise<void> {
-  await buildTypescriptProject({
-    ...options,
-    sourceDirectory: 'src',
-  });
-}
-
-/* TYPESCRIPT */
-
-interface BuildTypescriptProjectOptions {
-  readonly sourceDirectory?: string;
-  readonly outputDirectory?: string;
-  readonly cwd?: string;
+interface BuildLibProjectOptions extends BuildTypescriptProjectOptions {
+  readonly mode?: BuildMode;
   readonly logger: Logger;
 }
 
-async function buildTypescriptProject({
-  sourceDirectory = 'src',
-  outputDirectory = 'dist',
-  cwd = process.cwd(),
-  logger,
-}: BuildTypescriptProjectOptions): Promise<void> {
-  await using stack: AsyncDisposableStack = new AsyncDisposableStack();
-
-  // for await (const entry of glob(`${sourceDirectory}/**/*.{js,js.map}`, {
-  //   cwd,
-  // })) {
-  //   await rm(entry);
-  // }
-
-  const include: string[] = [];
-
-  const publicOutputPath: string | null = await generateTypescriptIndexFile({
-    sourceDirectory,
-    cwd,
+async function buildLibProject({ logger, ...options }: BuildLibProjectOptions): Promise<void> {
+  await logger.asyncTask('build-lib-project', async (logger: Logger): Promise<void> => {
+    await buildTypescriptProject({
+      ...options,
+      logger,
+    });
   });
-
-  if (publicOutputPath === null) {
-    throw new Error('Empty public typescript index file.');
-  } else {
-    stack.defer((): Promise<void> => rm(publicOutputPath));
-
-    include.push(isAbsolute(publicOutputPath) ? relative(cwd, publicOutputPath) : publicOutputPath);
-  }
-
-  const protectedOutputPath: string | null = await generateTypescriptIndexFile({
-    sourceDirectory,
-    type: 'protected',
-    cwd,
-  });
-
-  if (protectedOutputPath !== null) {
-    stack.defer((): Promise<void> => rm(protectedOutputPath));
-
-    include.push(
-      isAbsolute(protectedOutputPath) ? relative(cwd, protectedOutputPath) : protectedOutputPath,
-    );
-  }
-
-  const outDir: string = isAbsolute(outputDirectory)
-    ? relative(cwd, outputDirectory)
-    : outputDirectory;
-
-  const tsconfigBuildPath: string = join(cwd, 'tsconfig.build.json');
-
-  await writeJsonFileSafe(tsconfigBuildPath, {
-    extends: 'tsconfig.json',
-    compilerOptions: {
-      declaration: true,
-      declarationDir: outDir,
-      rootDir: sourceDirectory,
-      outDir,
-    },
-    include,
-  });
-
-  stack.defer((): Promise<void> => rm(tsconfigBuildPath));
-
-  await execCommandInherit(logger, 'tsc', ['-p', 'tsconfig.build.json'], { cwd });
 }

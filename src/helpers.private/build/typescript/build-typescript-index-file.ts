@@ -1,22 +1,23 @@
 import { glob } from 'node:fs/promises';
-import { join, relative, resolve } from 'node:path';
+import { join, relative } from 'node:path';
 import { normalize } from 'node:path/posix';
-import { writeTextFileSafe } from '../file/write-text-file-safe.ts';
-import { removeTrailingSlash } from '../path/remove-traling-slash.ts';
+import { writeTextFileSafe } from '../../file/write-text-file-safe.ts';
+import { removeTrailingSlash } from '../../path/remove-traling-slash.ts';
+import { toAbsolutePath } from '../../path/to-absolute-path.ts';
 
-export interface GenerateTypescriptIndexFileOptions {
+export interface BuildTypescriptIndexFileOptions {
   readonly sourceDirectory: string;
-  readonly type?: GenerateTypescriptIndexFileType;
+  readonly type?: BuildTypescriptIndexFileType;
   readonly cwd?: string;
 }
 
-export type GenerateTypescriptIndexFileType = 'public' | 'protected';
+export type BuildTypescriptIndexFileType = 'public' | 'protected';
 
-export async function generateTypescriptIndexFile({
+export async function buildTypescriptIndexFile({
   sourceDirectory,
   type = 'public',
   cwd = process.cwd(),
-}: GenerateTypescriptIndexFileOptions): Promise<string | null> {
+}: BuildTypescriptIndexFileOptions): Promise<string | null> {
   sourceDirectory = removeTrailingSlash(sourceDirectory);
 
   let fileName: string;
@@ -62,7 +63,7 @@ export async function generateTypescriptIndexFile({
     return null;
   }
 
-  const outputPath: string = resolve(cwd, join(sourceDirectory, fileName));
+  const outputPath: string = toAbsolutePath(join(sourceDirectory, fileName), cwd);
 
   await writeTextFileSafe(outputPath, content);
 

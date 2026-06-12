@@ -1,4 +1,5 @@
 import * as z from 'zod';
+import { fabriqueConfigSchema } from '../../fabrique/fabrique-config.schema.ts';
 import { packageJsonDependenciesSchema } from './package-json-dependencies/package-json-dependencies.schema.ts';
 
 export const packageJsonSchema = z
@@ -14,6 +15,7 @@ export const packageJsonSchema = z
     packageManager: z.string().optional(),
     // entry points
     main: z.string().nonempty().optional(),
+    bin: z.string().nonempty().optional(),
     module: z.string().nonempty().optional(),
     types: z.string().nonempty().optional(),
     exports: z.any().optional(),
@@ -25,11 +27,6 @@ export const packageJsonSchema = z
     peerDependencies: packageJsonDependenciesSchema.optional(),
     optionalDependencies: packageJsonDependenciesSchema.optional(),
     // fabrique
-    fabrique: z
-      .object({
-        version: z.string().nonempty(),
-        type: z.string().nonempty(),
-      })
-      .optional(),
+    fabrique: fabriqueConfigSchema.optional(),
   })
   .catchall(z.unknown());

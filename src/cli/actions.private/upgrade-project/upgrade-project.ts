@@ -1,5 +1,5 @@
 import { confirm, select } from '@inquirer/prompts';
-import { glob, mkdir, readFile } from 'node:fs/promises';
+import { glob, mkdir, readFile, rm } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { execCommandInherit } from '../../../helpers.private/cmd/exec-command.ts';
 import type { FabriqueConfig } from '../../../helpers.private/fabrique/fabrique-config.ts';
@@ -120,6 +120,11 @@ async function upgradeProjectFiles({
 }: UpgradeProjectFilesOptions): Promise<void> {
   templateDirectory = removeTrailingSlash(templateDirectory);
 
+  await rm(join(projectDirectory, 'fabrique'), {
+    force: true,
+    recursive: true,
+  });
+
   // files to exclude
   const exclude: readonly RegExp[] = [
     /^src(?:[\\\/].*)?$/,
@@ -169,7 +174,7 @@ async function upgradeProjectPackage({
     join(templateDirectory, 'package.json'),
   );
 
-  const newPackageJson = {
+  const newPackageJson: PackageJson = {
     ...templatePackage,
     ...projectPackage,
     scripts: {

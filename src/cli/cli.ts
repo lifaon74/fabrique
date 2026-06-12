@@ -50,7 +50,7 @@ program
 program
   .command('build')
   .description('builds a npm package')
-  .option('--mode', 'build mode: dev, rc, prod', 'prod')
+  .option('--mode <mode>', 'build mode: dev, rc, prod', 'prod')
   .option('--cwd <cwd>', 'common working directory', process.cwd)
   .option('--output <output>', 'output directory', undefined)
   .action((options: { mode: BuildMode; cwd: string; output: string }): Promise<void> => {
@@ -65,7 +65,7 @@ program
 program
   .command('release')
   .description('releases a npm package')
-  .option('--mode', 'release mode: dev, rc, prod', 'prod')
+  .option('--mode <mode>', 'release mode: dev, rc, prod', 'prod')
   .option('--dry', 'runs without releasing the package', false)
   .option('--cwd <cwd>', 'common working directory', process.cwd)
   .option('--output <output>', 'output directory', undefined)
