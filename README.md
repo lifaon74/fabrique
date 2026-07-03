@@ -154,7 +154,56 @@ Summary:
 
 ##### options
 
-- `--force`: forces an upgrade even if the lib is not a `fabrique` project or if the version is identical. _Use with caution._
+- `--mode <mode>` (one of `dev`, `rc`, `prod`, default `prod`): build the project using a specific mode:
+  - `dev`: appends `-dev.{prereleaseId}` into the package's version
+  - `rc`: appends `-rc.{prereleaseId}` into the package's version
+  - `prod`: ready for production
+
+#### \[cmd\]: release
+
+```shell
+# from the root of a "fabrique" project
+npx fabrique release
+```
+
+##### action
+
+This command releases an existing `fabrique` project. In order:
+
+- runs `fb:test` command to ensure that tests fulfill.
+  - if `fb:test` does not exists, runs `test` as a replacement.
+- runs `fb:build` command to build the project.
+  - if `fb:build` does not exists, runs `build` as a replacement.
+  - if `build` does not exists, runs `fabrique build` as a replacement.
+- checks that the resulting _build artifact_ can be published on npm.
+- publishes the package on npm.
+
+> INFO: run the command **inside** the `fabrique` project.
+
+##### options
+
+- `--mode <mode>` (one of `dev`, `rc`, `prod`, default `prod`): see `fabrique build --mode <mode>`
+  `--dry` (default: false): runs without publishing the package. This is useful to check if the output is correct or not.
+
+#### \[cmd\]: ci
+
+```shell
+npx fabrique ci [type]
+```
+
+##### \[type\]: release
+
+###### example
+
+```shell
+npx fabrique ci release
+```
+
+###### action
+
+Starts the CI `release` workflow.
+
+> INFO: this command is automatically run from the github action `release.yml`.
 
 #### \[cmd\]: refactor
 
@@ -245,3 +294,61 @@ You may get help on individual commands:
 ```shell
 npx fabrique create -h
 ```
+
+## Release Workflow
+
+### 1. Pull Request to `main` or `develop`
+
+- The `release.yml` workflow runs on `pull_request`
+- The `yarn fb:ci:release` step runs **only if** the PR has the `dev` label
+- Impacted packages are published as:
+- `x.y.z-dev.<timestamp>`
+- npm dist-tag: `dev`
+
+### 2. Push to `develop`
+
+- Impacted packages are published as:
+- `x.y.z-rc.<timestamp>`
+- npm dist-tag: `rc`
+
+### 3. Push to `main`
+
+- Stable publication:
+- `x.y.z`
+- npm dist-tag: `latest`
+- Only if `name@x.y.z` does not already exist on npm
+
+### Graph
+
+```mermaid
+flowchart LR
+  EVENT("EVENT")
+  HAS_DEV_TAG{"has &quotdev&quot tag ?"}
+  SKIP_BUILD(["skip build"])
+  BUILD_DEV_PACKAGES["build &quotdev&quot package"]
+  PUBLISH_DEV_PACKAGES["publish &quotdev&quot package"]
+  BUILD_RC_PACKAGES["build &quotrc&quot package"]
+  PUBLISH_RC_PACKAGES["publish &quotrc&quot package"]
+  BUILD_PROD_PACKAGES["build &quotprod&quot package"]
+  PUBLISH_PROD_PACKAGES["publish &quotprod&quot package"]
+  TARGET_BRANCH{"branch"}
+
+  EVENT -- "pull_request" --> HAS_DEV_TAG
+  HAS_DEV_TAG -- "no" --> SKIP_BUILD
+  HAS_DEV_TAG -- "yes" --> BUILD_DEV_PACKAGES
+  BUILD_DEV_PACKAGES --> PUBLISH_DEV_PACKAGES
+
+  EVENT -- "push" --> TARGET_BRANCH
+
+  TARGET_BRANCH -- "develop" --> BUILD_RC_PACKAGES
+  BUILD_RC_PACKAGES --> PUBLISH_RC_PACKAGES
+
+  TARGET_BRANCH -- "main" --> BUILD_PROD_PACKAGES
+  BUILD_PROD_PACKAGES --> PUBLISH_PROD_PACKAGES
+```
+
+## Important Rules
+
+- if the version already exists on npm: the release is skipped
+- the `package.json` file in the repo must keep stable versions (`x.y.z`)
+- `-dev` / `-rc` suffixes are generated in CI
