@@ -7,7 +7,7 @@
     "=== FB: BUILD ===": "",
     "fb:build": "fabrique build",
     "=== FB: CODE QUALITY ===": "",
-    "fb:format": "yarn format:fix",
+    "fb:format": "yarn fb:format:fix",
     "fb:format:check": "prettier --check --ignore-unknown --config .prettierrc \"./**/*.{js,jsx,ts,tsx,html,css,scss,json,md}\"",
     "fb:format:fix": "prettier --write --ignore-unknown --config .prettierrc \"./**/*.{js,jsx,ts,tsx,html,css,scss,json,md}\"",
     "fb:check": "yarn fb:check:types && yarn fb:format:check",
@@ -31,13 +31,13 @@
     "url": "{{giturl}}"
   },
   "devDependencies": {
-    "@types/node": "^25.9.3",
-    "@vitest/coverage-istanbul": "^4.1.8",
-    "prettier": "^3.8.4",
+    "@types/node": "^26.1.0",
+    "@vitest/coverage-istanbul": "^4.1.9",
+    "prettier": "^3.9.4",
     "prettier-plugin-organize-imports": "^4.3.0",
     "typedoc": "^0.28.19",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.9"
   },
-  "packageManager": "yarn@4.16.0"
+  "packageManager": "yarn@4.17.0"
 }

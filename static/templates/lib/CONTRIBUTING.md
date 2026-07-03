@@ -86,4 +86,3 @@ And replace the corresponding variables:
 1. format the code, using the command `yarn fb:format`
 1. commit and push your work following the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) convention
 1. create an MR from your repository to the upstream repository, explaining clearly what was added/fixed.
-

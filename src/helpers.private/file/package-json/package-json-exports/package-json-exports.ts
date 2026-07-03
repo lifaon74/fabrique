@@ -44,8 +44,7 @@ export function isPackageJsonExportsFallback(input: unknown): input is PackageJs
 /*--*/
 
 export type PackageJsonExportsEntryOrFallback =
-  | PackageJsonExportsEntry
-  | PackageJsonExportsFallback;
+  PackageJsonExportsEntry | PackageJsonExportsFallback;
 
 export function isPackageJsonExportsEntryOrFallback(
   input: unknown,

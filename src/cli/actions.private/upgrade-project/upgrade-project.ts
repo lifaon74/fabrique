@@ -96,7 +96,7 @@ export function upgradeProject({ force = false, logger }: UpgradeProjectOptions)
       ]);
 
       // update dependencies
-      await execCommandInherit(logger, 'yarn', [], {
+      await execCommandInherit(logger, 'yarn', ['install'], {
         cwd: projectDirectory,
       });
 

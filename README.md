@@ -11,7 +11,7 @@ letting the user **focus on the functionalities** of its library, instead of the
 With `fabrique` you'll be able to:
 
 - create rapidly a library with all the tools and scripts to:
-  - build and publish your library 
+  - build and publish your library
   - write tests for it
   - format your code
   - and debug it
@@ -21,7 +21,7 @@ With `fabrique` you'll be able to:
 
 ## Motivation
 
-When we develop javascript/typescript libraries, we frequently create new repositories 
+When we develop javascript/typescript libraries, we frequently create new repositories
 and maintain the scripts to build, test, and debug them.
 This tends to become rapidly cumbersome, especially when their number grows.
 We may choose to opt in for a _monorepo_, and I'll tell you: yes, in many cases, this is the optimal solution.
@@ -58,7 +58,6 @@ And run a command with:
 fabrique [cmd]
 ```
 
-
 ### List of commands
 
 #### \[cmd\]: create
@@ -86,7 +85,6 @@ You'll be prompted for a description, author and git url.
 
 - `[name]`: the library name
 
-
 > NOTE: currently only the `lib` type is supported. More architectures may be developed in the future.
 
 #### \[cmd\]: upgrade
@@ -102,6 +100,57 @@ This command updates an existing `fabrique` project: it updates the build files,
 It tries to be non-destructive.
 
 > INFO: run the command **inside** the `fabrique` project.
+
+##### options
+
+- `--force`: forces an upgrade even if the lib is not a `fabrique` project or if the version is identical. _Use with caution._
+
+#### \[cmd\]: build
+
+```shell
+# from the root of a "fabrique" project
+npx fabrique build
+```
+
+##### action
+
+This command builds an existing `fabrique` project.
+
+> INFO: run the command **inside** the `fabrique` project.
+
+###### `lib` project
+
+Summary:
+
+- TypeScript files are transpiled into JavaScript files.
+- You can exclude some files or directories by adding the suffix `.private` to the file or directory name (ex: `src/**/*.private/**/.ts`, `src/**/*.private.ts`).
+- You can exclude `protected` files or directories by adding the suffix `.protected` to the file or directory name.
+  These files are exported into a separate `src/index.protected.ts` file, that can be imported by `import * from '@my-organization/my-library/protected'`.
+- A ready to publish package is generated in the `dist` folder.
+
+<details>
+
+<summary>Details</summary>
+
+1. All `src/**/*.ts` files are transpiled into `dist/src/**/*.js`, `dist/src/**/*.js.map`, and `dist/src/**/*.d.ts` files.
+1. All `src/**/*.ts` files except `src/**/*.{test,spec,bench,protected,private}.ts` and `src/**/*.{test,spec,bench,protected,private}/**/*.ts`
+   are exported into a temporatry `src/index.ts` file (and transpiled into `dist/src/index.js`).
+1. All `src/**/*.protected.ts` files except `src/**/*.{test,spec,bench,private}.ts` and `src/**/*.{test,spec,bench,private}/**/*.ts`
+   are exported into a temporatry `src/index.protected.ts` file (and transpiled into `dist/src/index.protected.js`).
+
+- NOTE: if no `protected` files are found, the `index.protected.ts` file is not generated
+
+1. The `package.json` is copied into `dist/package.json` with the foloowing modifications:
+
+- The `main` field is set to `dist/src/index.js`
+- The `types` field is set to `dist/src/index.d.ts`
+- The `exports` field is set to:
+  - `.`: `dist/src/index.js`
+  - `./protected`: `dist/src/index.protected.js`
+- Other fields pointing to `.ts` files are updated to point on the corresponing `.js` files
+- Unnecessary fields for publication are removed (ex: `scripts`, `packageManager`, etc.)
+
+</details>
 
 ##### options
 
@@ -173,7 +222,6 @@ It preserves the case of the names (ex: `dash-case`, or `cameCase`).
 - `--dry` (default: false): runs without modifying the files. This is useful to check if your refactoring is safe or not.
 - `--cwd` (default: current folder): specifies the directory to start from.
 
-
 #### --version
 
 ```shell
@@ -197,6 +245,3 @@ You may get help on individual commands:
 ```shell
 npx fabrique create -h
 ```
-
-
-

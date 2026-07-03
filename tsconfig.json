@@ -55,8 +55,5 @@
     "strictPropertyInitialization": true,
     "erasableSyntaxOnly": true
   },
-  "include": [
-    "src/**/*.ts",
-    "ci/**/*.ts"
-  ]
+  "include": ["src/**/*.ts", "ci/**/*.ts"]
 }
