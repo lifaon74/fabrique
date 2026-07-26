@@ -17,7 +17,7 @@
     "fb:check": "yarn fb:check:types && yarn fb:format:check",
     "fb:check:types": "tsc -p tsconfig.json --noEmit",
     "=== FB: RELEASE ===": "",
-    "fb:first:release": "fabrique release",
+    "fb:manual:release": "fabrique release",
     "fb:ci:release": "fabrique ci release"
   },
   "description": "CLI to build a library",
