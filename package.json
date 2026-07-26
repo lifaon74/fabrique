@@ -1,6 +1,6 @@
 {
   "name": "fabrique",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "type": "module",
   "main": "src/cli/cli.ts",
   "bin": "src/cli/cli.ts",

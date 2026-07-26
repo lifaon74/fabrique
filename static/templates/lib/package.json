@@ -12,7 +12,8 @@
     "fb:format:fix": "prettier --write --ignore-unknown --config .prettierrc \"./**/*.{js,jsx,ts,tsx,html,css,scss,json,md}\"",
     "fb:check": "yarn fb:check:types && yarn fb:format:check",
     "fb:check:types": "tsc -p tsconfig.json --noEmit",
-    "=== FB: CI ===": "",
+    "=== FB: RELEASE ===": "",
+    "fb:manual:release": "fabrique release",
     "fb:ci:release": "fabrique ci release",
     "=== FB: TEST ===": "",
     "fb:test": "vitest",
@@ -39,5 +40,5 @@
     "typescript": "^7.0.2",
     "vitest": "^4.1.10"
   },
-  "packageManager": "yarn@4.17.0"
+  "packageManager": "yarn@4.17.1"
 }
