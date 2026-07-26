@@ -19,9 +19,9 @@ export function parseSemver(input: string): Semver | null {
   return {
     major: Number(match[1]),
     minor: Number(match[2]),
-    patch: Number(match[2]),
-    prerelease: match[3],
-    build: match[4],
+    patch: Number(match[3]),
+    prerelease: match[4],
+    build: match[5],
   };
 }
 
