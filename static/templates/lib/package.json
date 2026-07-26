@@ -16,7 +16,7 @@
     "fb:manual:release": "fabrique release",
     "fb:ci:release": "fabrique ci release",
     "=== FB: TEST ===": "",
-    "fb:test": "vitest",
+    "fb:test": "vitest run",
     "fb:test:coverage": "vitest run --coverage",
     "fb:bench": "vitest bench",
     "=== FB: DOC ===": "",
