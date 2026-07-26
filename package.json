@@ -1,6 +1,6 @@
 {
   "name": "fabrique",
-  "version": "2.0.6",
+  "version": "2.0.7",
   "type": "module",
   "main": "src/cli/cli.ts",
   "bin": "src/cli/cli.ts",
@@ -28,12 +28,12 @@
     "type": "git",
     "url": "https://github.com/lifaon74/fabrique"
   },
-  "packageManager": "yarn@4.17.0",
+  "packageManager": "yarn@4.17.1",
   "devDependencies": {
-    "@types/node": "^26.1.0",
-    "prettier": "^3.9.4",
+    "@types/node": "^26.1.1",
+    "prettier": "^3.9.6",
     "prettier-plugin-organize-imports": "^4.3.0",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "@inquirer/prompts": "^8.5.2",

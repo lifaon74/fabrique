@@ -31,13 +31,13 @@
     "url": "{{giturl}}"
   },
   "devDependencies": {
-    "@types/node": "^26.1.0",
-    "@vitest/coverage-istanbul": "^4.1.9",
-    "prettier": "^3.9.4",
+    "@types/node": "^26.1.1",
+    "@vitest/coverage-istanbul": "^4.1.10",
+    "prettier": "^3.9.6",
     "prettier-plugin-organize-imports": "^4.3.0",
-    "typedoc": "^0.28.19",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.9"
+    "typedoc": "^0.28.20",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   },
   "packageManager": "yarn@4.17.0"
 }

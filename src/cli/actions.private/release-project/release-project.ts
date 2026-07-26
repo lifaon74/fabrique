@@ -4,6 +4,7 @@ import { execCommandInherit } from '../../../helpers.private/cmd/exec-command.ts
 import type { PackageJson } from '../../../helpers.private/file/package-json/package-json.ts';
 import { readPackageJsonFile } from '../../../helpers.private/file/package-json/read-package-json-file.ts';
 import type { Logger } from '../../../helpers.private/log/logger.ts';
+import { parseSemverStrict, type Semver } from '../../../helpers.private/misc/semver/semver.ts';
 import { isNpmPackagePublished } from '../../../helpers.private/npm/is-npm-version-published/is-npm-package-published.ts';
 import { toAbsolutePath } from '../../../helpers.private/path/to-absolute-path.ts';
 import { releaseModeToNpmTag } from '../../../helpers.private/release/release-mode/release-mode-to-npm-tag.ts';
@@ -69,14 +70,17 @@ export function releaseProject({
       toAbsolutePath(join(output, 'package.json'), cwd),
     );
 
+    const outputVersion: Semver = parseSemverStrict(outputPackageJson.version);
+    const baseOutputVersion: string = `${outputVersion.major}.${outputVersion.minor}.${outputVersion.patch}`;
+
     if (
       await isNpmPackagePublished({
         name: outputPackageJson.name,
-        version: outputPackageJson.version,
+        version: baseOutputVersion,
       })
     ) {
       throw new Error(
-        `Package ${outputPackageJson.name}@${outputPackageJson.version} already exists on npm.`,
+        `Package ${outputPackageJson.name}@${baseOutputVersion} already exists on npm.`,
       );
     }
 
