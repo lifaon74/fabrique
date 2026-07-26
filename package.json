@@ -1,6 +1,6 @@
 {
   "name": "fabrique",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "type": "module",
   "main": "src/cli/cli.ts",
   "bin": "src/cli/cli.ts",
@@ -16,7 +16,8 @@
     "fb:format:fix": "prettier --write --ignore-unknown --config .prettierrc \"./**/*.{js,jsx,ts,tsx,html,css,scss,json,md}\"",
     "fb:check": "yarn fb:check:types && yarn fb:format:check",
     "fb:check:types": "tsc -p tsconfig.json --noEmit",
-    "=== FB: CI ===": "",
+    "=== FB: RELEASE ===": "",
+    "fb:first:release": "fabrique release",
     "fb:ci:release": "fabrique ci release"
   },
   "description": "CLI to build a library",
