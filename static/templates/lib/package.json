@@ -32,7 +32,7 @@
     "url": "{{giturl}}"
   },
   "devDependencies": {
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.1.2",
     "@vitest/coverage-istanbul": "^4.1.10",
     "prettier": "^3.9.6",
     "prettier-plugin-organize-imports": "^4.3.0",
