@@ -1,13 +1,14 @@
-import { readFile } from 'node:fs/promises';
+import type { PathLike, ReadFileOptionsWithStringEncoding } from 'node:fs';
+import { type FileHandle, readFile } from 'node:fs/promises';
 
-export type ReadJsonFileArguments =
-  Parameters<typeof readFile> extends [infer GPath, ...infer GRest] ? [GPath, ...GRest] : never;
-
-export async function readJsonFile<GValue = any>(...args: ReadJsonFileArguments): Promise<GValue> {
+export async function readJsonFile<GValue = any>(
+  path: PathLike | FileHandle,
+  options?: ReadFileOptionsWithStringEncoding,
+): Promise<GValue> {
   return JSON.parse(
-    (await readFile(args[0], {
-      ...(typeof args[1] === 'object' ? args[1] : {}),
+    await readFile(path, {
       encoding: 'utf-8',
-    })) as unknown as string,
+      ...options,
+    }),
   );
 }
