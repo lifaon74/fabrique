@@ -18,9 +18,7 @@
     "=== FB: TEST ===": "",
     "fb:test": "vitest run",
     "fb:test:coverage": "vitest run --coverage",
-    "fb:bench": "vitest bench",
-    "=== FB: DOC ===": "",
-    "fb:typedoc": "typedoc --options typedoc.json --tsconfig tsconfig.json"
+    "fb:bench": "vitest bench"
   },
   "description": "{{description}}",
   "keywords": [],
