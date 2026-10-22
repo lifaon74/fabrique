@@ -6,6 +6,10 @@
   "scripts": {
     "=== FB: BUILD ===": "",
     "fb:build": "fabrique build",
+    "=== FB: TEST ===": "",
+    "fb:test": "vitest run",
+    "fb:test:coverage": "vitest run --coverage",
+    "fb:bench": "vitest bench",
     "=== FB: CODE QUALITY ===": "",
     "fb:format": "yarn fb:format:fix",
     "fb:format:check": "prettier --check --ignore-unknown --config .prettierrc \"./**/*.{js,jsx,ts,tsx,html,css,scss,json,md}\"",
@@ -14,11 +18,7 @@
     "fb:check:types": "tsc -p tsconfig.json --noEmit",
     "=== FB: RELEASE ===": "",
     "fb:manual:release": "fabrique release",
-    "fb:ci:release": "fabrique ci release",
-    "=== FB: TEST ===": "",
-    "fb:test": "vitest run",
-    "fb:test:coverage": "vitest run --coverage",
-    "fb:bench": "vitest bench"
+    "fb:ci:release": "fabrique ci release"
   },
   "description": "{{description}}",
   "keywords": [],
@@ -34,7 +34,6 @@
     "@vitest/coverage-istanbul": "^5.0.5",
     "prettier": "^3.9.10",
     "prettier-plugin-organize-imports": "^4.3.0",
-    "typedoc": "^0.28.20",
     "typescript": "^7.0.2",
     "vite": "^8.3.4",
     "vitest": "^5.0.5"

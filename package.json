@@ -1,6 +1,6 @@
 {
   "name": "fabrique",
-  "version": "2.0.20",
+  "version": "2.0.21",
   "type": "module",
   "main": "src/cli/cli.ts",
   "bin": "src/cli/cli.ts",
@@ -10,6 +10,10 @@
     "fb:link": "npm link",
     "=== FB: BUILD ===": "",
     "fb:build": "fabrique build",
+    "=== FB: TEST ===": "",
+    "fb:test": "vitest run",
+    "fb:test:coverage": "vitest run --coverage",
+    "fb:bench": "vitest bench",
     "=== FB: CODE QUALITY ===": "",
     "fb:format": "yarn fb:format:fix",
     "fb:format:check": "prettier --check --ignore-unknown --config .prettierrc \"./**/*.{js,jsx,ts,tsx,html,css,scss,json,md}\"",
@@ -32,12 +36,15 @@
   "packageManager": "yarn@4.18.1",
   "devDependencies": {
     "@types/node": "^26.6.5",
+    "@vitest/coverage-istanbul": "^5.0.5",
     "prettier": "^3.9.10",
     "prettier-plugin-organize-imports": "^4.3.0",
-    "typescript": "^7.0.2"
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
   },
   "dependencies": {
-    "@inquirer/prompts": "^8.7.3",
+    "@inquirer/prompts": "^8.7.4",
     "chalk": "^6.0.1",
     "commander": "^15.0.0",
     "zod": "^4.6.7"
