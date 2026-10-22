@@ -101,6 +101,11 @@ It tries to be non-destructive.
 
 > INFO: run the command **inside** the `fabrique` project.
 
+> WARNING: the files belonging to the `fabrique` template are **overwritten** on each upgrade.
+> Only `src/**/*`, `README.md`, `LICENSE`, `package.json`, `yarn.lock` and `.github/auto_assign.yml` are preserved: every other file present in the template (ex: `.github/workflows/*`, `tsconfig.json`, `vitest.config.ts`, `.yarnrc.yml`, `.prettierrc`, `.nvmrc`, and the `fabrique/` directory) is replaced by the template's version.
+> Do not hand-edit these files: your changes would be silently lost on the next upgrade. Instead, put your custom configuration in separate files (ex: an additional workflow file, or a dedicated tsconfig extending the generated one).
+> The `package.json` scripts are merged: your scripts are kept as long as they are not prefixed with `fb:` (they are moved under the `=== FB: CUSTOM SCRIPTS ===` section), while `fb:`-prefixed scripts are considered fabrique-owned and replaced by the template's versions.
+
 ##### options
 
 - `--force`: forces an upgrade even if the lib is not a `fabrique` project or if the version is identical. _Use with caution._
@@ -123,7 +128,12 @@ This command builds an existing `fabrique` project.
 Summary:
 
 - TypeScript files are transpiled into JavaScript files.
+- The public API of your library is defined by a generated barrel file: at build time, a temporary `src/index.ts` re-exporting all non-private, non-test source files is generated, transpiled, then **removed**.
+  Never commit it, and don't import it from your sources: import your modules directly instead.
+  Only the files transitively imported from this barrel (or from `src/index.protected.ts`) are transpiled and published.
 - You can exclude some files or directories by adding the suffix `.private` to the file or directory name (ex: `src/**/*.private/**/.ts`, `src/**/*.private.ts`).
+  Private files are excluded from the barrel and are not published, unless they are imported by an exported file.
+- Files suffixed with `.test.ts`, `.spec.ts` or `.bench.ts` are excluded from the barrel and are never published (tests run from the sources with `fb:test`).
 - You can exclude `protected` files or directories by adding the suffix `.protected` to the file or directory name.
   These files are exported into a separate `src/index.protected.ts` file, that can be imported by `import * from '@my-organization/my-library/protected'`.
 - A ready to publish package is generated in the `dist` folder.
@@ -132,11 +142,12 @@ Summary:
 
 <summary>Details</summary>
 
-1. All `src/**/*.ts` files are transpiled into `dist/src/**/*.js`, `dist/src/**/*.js.map`, and `dist/src/**/*.d.ts` files.
-1. All `src/**/*.ts` files except `src/**/*.{test,spec,bench,protected,private}.ts` and `src/**/*.{test,spec,bench,protected,private}/**/*.ts`
-   are exported into a temporatry `src/index.ts` file (and transpiled into `dist/src/index.js`).
-1. All `src/**/*.protected.ts` files except `src/**/*.{test,spec,bench,private}.ts` and `src/**/*.{test,spec,bench,private}/**/*.ts`
-   are exported into a temporatry `src/index.protected.ts` file (and transpiled into `dist/src/index.protected.js`).
+1. A temporary `src/index.ts` re-exporting all `src/**/*.ts` files except `src/**/*.{test,spec,bench,protected,private}.ts` and `src/**/*.{test,spec,bench,protected,private}/**/*.ts`
+   is generated (and transpiled into `dist/src/index.js`). This file is removed once the build completes: never commit it.
+1. A temporary `src/index.protected.ts` re-exporting all `src/**/*.protected.ts` files except `src/**/*.{test,spec,bench,private}.ts` and `src/**/*.{test,spec,bench,private}/**/*.ts`
+   is generated (and transpiled into `dist/src/index.protected.js`).
+1. TypeScript is compiled with the barrel files as the only entry points: a file is transpiled into `dist/src/**/*.js` (with its `.js.map` and `.d.ts` files) only if it is transitively imported from `src/index.ts` (or `src/index.protected.ts`).
+   All other files (ex: all `*.test.ts` files, or `*.private.ts` files not imported by an exported file) are not transpiled at all.
 
 - NOTE: if no `protected` files are found, the `index.protected.ts` file is not generated
 
