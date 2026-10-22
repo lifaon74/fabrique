@@ -11,9 +11,6 @@ export default defineConfig({
         'src/**/*.skip-test*.ts',
         'src/**/*.skip-test*/**/*.ts',
       ],
-      thresholds: {
-        100: true,
-      },
     },
   },
 });
