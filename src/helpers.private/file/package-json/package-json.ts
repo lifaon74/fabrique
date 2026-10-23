@@ -1,4 +1,5 @@
 import type { FabriqueConfig } from '../../fabrique/fabrique-config.ts';
+import type { PackageJsonBin } from './package-json-bin/package-json-bin.ts';
 import type { PackageJsonDependencies } from './package-json-dependencies/package-json-dependencies.ts';
 import type { PackageJsonExports } from './package-json-exports/package-json-exports.ts';
 
@@ -14,7 +15,7 @@ export interface PackageJson {
   readonly packageManager?: string;
   // entry points
   readonly main?: string;
-  readonly bin?: string;
+  readonly bin?: PackageJsonBin;
   readonly module?: string;
   readonly types?: string;
   readonly exports?: PackageJsonExports;
