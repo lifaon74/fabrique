@@ -1,5 +1,6 @@
 import * as z from 'zod';
 import { fabriqueConfigSchema } from '../../fabrique/fabrique-config.schema.ts';
+import { packageJsonBinSchema } from './package-json-bin/package-json-bin.schema.ts';
 import { packageJsonDependenciesSchema } from './package-json-dependencies/package-json-dependencies.schema.ts';
 
 export const packageJsonSchema = z
@@ -15,7 +16,7 @@ export const packageJsonSchema = z
     packageManager: z.string().optional(),
     // entry points
     main: z.string().nonempty().optional(),
-    bin: z.string().nonempty().optional(),
+    bin: packageJsonBinSchema,
     module: z.string().nonempty().optional(),
     types: z.string().nonempty().optional(),
     exports: z.any().optional(),
