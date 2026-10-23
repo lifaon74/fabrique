@@ -16,7 +16,7 @@ export const packageJsonSchema = z
     packageManager: z.string().optional(),
     // entry points
     main: z.string().nonempty().optional(),
-    bin: packageJsonBinSchema,
+    bin: packageJsonBinSchema.optional(),
     module: z.string().nonempty().optional(),
     types: z.string().nonempty().optional(),
     exports: z.any().optional(),
