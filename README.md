@@ -282,6 +282,35 @@ It preserves the case of the names (ex: `dash-case`, or `cameCase`).
 - `--dry` (default: false): runs without modifying the files. This is useful to check if your refactoring is safe or not.
 - `--cwd` (default: current folder): specifies the directory to start from.
 
+#### \[cmd\]: setup-github-repository
+
+```shell
+# from the root of a "fabrique" project
+npx fabrique setup-github-repository
+```
+
+##### action
+
+This command configures the basic rules of the GitHub repository of the current project, using the [GitHub CLI](https://cli.github.com) (`gh`):
+
+- repository settings:
+  - merge commits are allowed, while rebase and squash merges are disabled
+  - head branches are deleted when pull requests are merged
+- a branch ruleset on `main` and `develop`:
+  - push, force-push and deletion are forbidden: changes must go through a pull request
+  - the CI check (`Check`) must pass, with an up-to-date branch, to allow the merge
+- a tag ruleset on release tags (`v*`): deletion and force-push are forbidden
+
+> INFO: requires the GitHub CLI (`gh`) to be installed and authenticated, with **administrator** permission on the repository.
+> The command is idempotent: it updates the existing rules instead of duplicating them.
+
+##### options
+
+- `--dry` (default: false): runs without applying the changes. Useful to preview the `gh` commands.
+- `--cwd` (default: current folder): the repository directory.
+- `--required-checks <names>` (default: `Check`): comma-separated list of CI checks required to merge.
+- `--approvals <count>` (default: 0): number of approving reviews required to merge (0 = pull request only).
+
 #### --version
 
 ```shell

@@ -22,3 +22,7 @@ User preferences for TypeScript naming and typing — apply them to new code and
 - No `private` keyword on methods or properties: use private fields (`#myMethod`) instead.
 - Every TypeScript generic follows the pattern `G` + PascalCase name (`GResult`), never single letters.
 - Use `readonly` as much as possible in types and interfaces.
+
+## GitHub
+
+- Never merge a pull request without the user's explicit approval: open the PR, wait for the CI, then let the user merge.
