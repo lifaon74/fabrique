@@ -25,7 +25,7 @@ export interface SetupGithubRepositoryOptions {
 
 /**
  * Configures the basic rules of the GitHub repository of the current project, using the GitHub CLI:
- * - repository settings: merge commits only, head branches deleted on merge
+ * - repository settings: merge commits only, auto-merge, head branches deleted on merge
  * - a ruleset protecting the release branches: no push, force-push or deletion, required CI checks
  * - a ruleset protecting the release tags: no deletion, no force-push
  */
@@ -137,6 +137,7 @@ async function updateRepositorySettings({
     'edit',
     repository.nameWithOwner,
     '--delete-branch-on-merge=true',
+    '--enable-auto-merge=true',
     '--enable-merge-commit=true',
     '--enable-rebase-merge=false',
     '--enable-squash-merge=false',
