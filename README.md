@@ -295,6 +295,7 @@ This command configures the basic rules of the GitHub repository of the current 
 
 - repository settings:
   - merge commits are allowed, while rebase and squash merges are disabled
+  - auto-merge is enabled: pull requests can merge automatically once all their requirements are met
   - head branches are deleted when pull requests are merged
 - a branch ruleset on `main` and `develop`:
   - push, force-push and deletion are forbidden: changes must go through a pull request
