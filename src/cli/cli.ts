@@ -13,6 +13,7 @@ import { ciWorkflow } from './actions.private/ci-workflow/ci-workflow.ts';
 import { createProject } from './actions.private/create-project/create-project.ts';
 import { refactor } from './actions.private/refactor/refactor.ts';
 import { releaseProject } from './actions.private/release-project/release-project.ts';
+import { setupGithubRepository } from './actions.private/setup-github-repository/setup-github-repository.ts';
 import { upgradeProject } from './actions.private/upgrade-project/upgrade-project.ts';
 
 // tuto: https://medium.com/nmc-techblog/building-a-cli-with-node-js-in-2024-c278802a3ef5
@@ -107,5 +108,37 @@ program
       ...options,
     });
   });
+
+// CMD: setup-github-repository
+program
+  .command('setup-github-repository')
+  .description('configures the GitHub repository rules (branches, tags, merges) using gh')
+  .option('--dry', 'runs without applying the changes', false)
+  .option('--cwd <cwd>', 'working directory of the repository', process.cwd)
+  .option(
+    '--required-checks <names>',
+    'comma-separated list of CI checks required to merge',
+    'Check',
+  )
+  .option('--approvals <count>', 'number of approving reviews required to merge (0 = PR only)', '0')
+  .action(
+    (options: {
+      dry: boolean;
+      cwd: string;
+      requiredChecks: string;
+      approvals: string;
+    }): Promise<void> => {
+      return setupGithubRepository({
+        dry: options.dry,
+        cwd: options.cwd,
+        requiredChecks: options.requiredChecks
+          .split(',')
+          .map((name: string): string => name.trim())
+          .filter((name: string): boolean => name.length > 0),
+        approvals: Number(options.approvals),
+        logger,
+      });
+    },
+  );
 
 program.parse();
