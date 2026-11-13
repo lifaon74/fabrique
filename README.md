@@ -5,32 +5,32 @@
 
 # Fabrique
 
-`fabrique` is a **cli to create, build and publish libraries**,
-letting the user **focus on the functionalities** of its library, instead of the build/publish process.
+`fabrique` is a **CLI to create, build and publish libraries**,
+letting the user **focus on the features of their library**, instead of the build/publish process.
 
-With `fabrique` you'll be able to:
+With `fabrique`, you'll be able to:
 
-- create rapidly a library with all the tools and scripts to:
+- quickly create a library with all the tools and scripts to:
   - build and publish your library
   - write tests for it
   - format your code
   - and debug it
-- upgrade any Fabrique project to get the last functionalities in one command line.
+- upgrade any Fabrique project to get the latest features with a single command.
 
-> `fabrique` is the French word for "made/factory"
+> `fabrique` is the French word for "factory" (from the verb "fabriquer", "to make")
 
 ## Motivation
 
-When we develop javascript/typescript libraries, we frequently create new repositories
+When we develop JavaScript/TypeScript libraries, we frequently create new repositories
 and maintain the scripts to build, test, and debug them.
-This tends to become rapidly cumbersome, especially when their number grows.
-We may choose to opt in for a _monorepo_, and I'll tell you: yes, in many cases, this is the optimal solution.
-However, in many other cases, one library per-repo makes sense, and this is where `fabrique` comes in.
+This quickly becomes cumbersome, especially as their number grows.
+We may opt for a _monorepo_, and I'll tell you: yes, in many cases, this is the optimal solution.
+However, in many other cases, one library per repo makes sense, and this is where `fabrique` comes in.
 
-Another goal is to focus on simplicity: for new incomers in javascript,
+Another goal is to focus on simplicity: for newcomers to JavaScript,
 learning all the tools and build processes is complicated.
-You want to write your library, but you have to learn `vite`, `jest`, how to build and publish a lib,
-install `prettier`, etc. With `fabrique` all comes in pre-configured.
+You want to write your library, but you have to learn `vite`, `jest`, how to build and publish a library,
+install `prettier`, etc. With `fabrique`, everything comes pre-configured.
 
 ## 📝 Documentation
 
@@ -46,7 +46,7 @@ We recommend using [npx](https://docs.npmjs.com/cli/v8/commands/npx):
 npx fabrique [cmd]
 ```
 
-But you may prefer to install globally `fabrique`:
+But you may prefer to install `fabrique` globally:
 
 ```shell
 npm install -g fabrique
@@ -77,15 +77,17 @@ npx fabrique create lib @my-organization/my-library
 ###### action
 
 This command creates a new library with the name `[name]` inside the folder `./[name]` (in our example: `./@my-organization/my-library`).
-You'll be prompted for a description, author and git url.
+You'll be prompted for a description, an author and a git URL.
 
-> INFO: run the command where you want to create your project.
+> [!TIP]
+> Run the command where you want to create your project.
 
 ###### options
 
 - `[name]`: the library name
 
-> NOTE: currently only the `lib` type is supported. More architectures may be developed in the future.
+> [!NOTE]
+> Currently, only the `lib` type is supported. More architectures may be developed in the future.
 
 #### \[cmd\]: upgrade
 
@@ -96,14 +98,16 @@ npx fabrique upgrade
 
 ##### action
 
-This command updates an existing `fabrique` project: it updates the build files, the scripts, etc.
+This command updates an existing `fabrique` project: it refreshes the build files, the scripts, etc.
 It tries to be non-destructive.
 
-> INFO: run the command **inside** the `fabrique` project.
+> [!IMPORTANT]
+> Run the command **inside** the `fabrique` project.
 
-> WARNING: the files belonging to the `fabrique` template are **overwritten** on each upgrade.
-> Only `src/**/*`, `README.md`, `LICENSE`, `package.json`, `yarn.lock` and `.github/auto_assign.yml` are preserved: every other file present in the template (ex: `.github/workflows/*`, `tsconfig.json`, `vitest.config.ts`, `.yarnrc.yml`, `.prettierrc`, `.nvmrc`, and the `fabrique/` directory) is replaced by the template's version.
-> Do not hand-edit these files: your changes would be silently lost on the next upgrade. Instead, put your custom configuration in separate files (ex: an additional workflow file, or a dedicated tsconfig extending the generated one).
+> [!WARNING]
+> The files belonging to the `fabrique` template are **overwritten** on each upgrade.
+> Only `src/**/*`, `README.md`, `LICENSE`, `package.json`, `yarn.lock` and `.github/auto_assign.yml` are preserved: every other file present in the template (e.g. `.github/workflows/*`, `tsconfig.json`, `vitest.config.ts`, `.yarnrc.yml`, `.prettierrc`, `.nvmrc`, and the `fabrique/` directory) is replaced by the template's version.
+> Do not hand-edit these files: your changes would be silently lost on the next upgrade. Instead, put your custom configuration in separate files (e.g. an additional workflow file, or a dedicated tsconfig extending the generated one).
 > The `package.json` scripts are merged: your scripts are kept as long as they are not prefixed with `fb:` (they are moved under the `=== FB: CUSTOM SCRIPTS ===` section), while `fb:`-prefixed scripts are considered fabrique-owned and replaced by the template's versions.
 
 ##### options
@@ -121,7 +125,8 @@ npx fabrique build
 
 This command builds an existing `fabrique` project.
 
-> INFO: run the command **inside** the `fabrique` project.
+> [!IMPORTANT]
+> Run the command **inside** the `fabrique` project.
 
 ###### `lib` project
 
@@ -131,12 +136,12 @@ Summary:
 - The public API of your library is defined by a generated barrel file: at build time, a temporary `src/index.ts` re-exporting all non-private, non-test source files is generated, transpiled, then **removed**.
   Never commit it, and don't import it from your sources: import your modules directly instead.
   Only the files transitively imported from this barrel (or from `src/index.protected.ts`) are transpiled and published.
-- You can exclude some files or directories by adding the suffix `.private` to the file or directory name (ex: `src/**/*.private/**/.ts`, `src/**/*.private.ts`).
+- You can exclude some files or directories by adding the suffix `.private` to the file or directory name (e.g. `src/**/*.private/**`, `src/**/*.private.ts`).
   Private files are excluded from the barrel and are not published, unless they are imported by an exported file.
 - Files suffixed with `.test.ts`, `.spec.ts` or `.bench.ts` are excluded from the barrel and are never published (tests run from the sources with `fb:test`).
 - You can exclude `protected` files or directories by adding the suffix `.protected` to the file or directory name.
-  These files are exported into a separate `src/index.protected.ts` file, that can be imported by `import * from '@my-organization/my-library/protected'`.
-- A ready to publish package is generated in the `dist` folder.
+  These files are exported into a separate `src/index.protected.ts` file, which can be imported by `import * from '@my-organization/my-library/protected'`.
+- A ready-to-publish package is generated in the `dist` folder.
 
 <details>
 
@@ -147,27 +152,28 @@ Summary:
 1. A temporary `src/index.protected.ts` re-exporting all `src/**/*.protected.ts` files except `src/**/*.{test,spec,bench,private}.ts` and `src/**/*.{test,spec,bench,private}/**/*.ts`
    is generated (and transpiled into `dist/src/index.protected.js`).
 1. TypeScript is compiled with the barrel files as the only entry points: a file is transpiled into `dist/src/**/*.js` (with its `.js.map` and `.d.ts` files) only if it is transitively imported from `src/index.ts` (or `src/index.protected.ts`).
-   All other files (ex: all `*.test.ts` files, or `*.private.ts` files not imported by an exported file) are not transpiled at all.
+   All other files (e.g. all `*.test.ts` files, or `*.private.ts` files not imported by an exported file) are not transpiled at all.
 
-- NOTE: if no `protected` files are found, the `index.protected.ts` file is not generated
+> [!NOTE]
+> If no `protected` files are found, the `index.protected.ts` file is not generated.
 
-1. The `package.json` is copied into `dist/package.json` with the foloowing modifications:
+1. The `package.json` is copied into `dist/package.json` with the following modifications:
 
 - The `main` field is set to `dist/src/index.js`
 - The `types` field is set to `dist/src/index.d.ts`
 - The `exports` field is set to:
   - `.`: `dist/src/index.js`
   - `./protected`: `dist/src/index.protected.js`
-- Other fields pointing to `.ts` files are updated to point on the corresponing `.js` files
-- Unnecessary fields for publication are removed (ex: `scripts`, `packageManager`, etc.)
+- Other fields pointing to `.ts` files are updated to point to the corresponding `.js` files
+- Unnecessary fields for publication are removed (e.g. `scripts`, `packageManager`, etc.)
 
 </details>
 
 ##### options
 
 - `--mode <mode>` (one of `dev`, `rc`, `prod`, default `prod`): build the project using a specific mode:
-  - `dev`: appends `-dev.{prereleaseId}` into the package's version
-  - `rc`: appends `-rc.{prereleaseId}` into the package's version
+  - `dev`: appends `-dev.{prereleaseId}` to the package's version
+  - `rc`: appends `-rc.{prereleaseId}` to the package's version
   - `prod`: ready for production
 
 #### \[cmd\]: release
@@ -179,22 +185,23 @@ npx fabrique release
 
 ##### action
 
-This command releases an existing `fabrique` project. In order:
+This command releases an existing `fabrique` project, performing the following steps in order:
 
-- runs `fb:test` command to ensure that tests fulfill.
-  - if `fb:test` does not exists, runs `test` as a replacement.
-- runs `fb:build` command to build the project.
-  - if `fb:build` does not exists, runs `build` as a replacement.
-  - if `build` does not exists, runs `fabrique build` as a replacement.
+- runs the `fb:test` command to ensure that the tests pass.
+  - if `fb:test` does not exist, runs `test` as a replacement.
+- runs the `fb:build` command to build the project.
+  - if `fb:build` does not exist, runs `build` as a replacement.
+  - if `build` does not exist, runs `fabrique build` as a replacement.
 - checks that the resulting _build artifact_ can be published on npm.
 - publishes the package on npm.
 
-> INFO: run the command **inside** the `fabrique` project.
+> [!IMPORTANT]
+> Run the command **inside** the `fabrique` project.
 
 ##### options
 
 - `--mode <mode>` (one of `dev`, `rc`, `prod`, default `prod`): see `fabrique build --mode <mode>`
-  `--dry` (default: false): runs without publishing the package. This is useful to check if the output is correct or not.
+- `--dry` (default: false): runs without publishing the package. This is useful to check if the output is correct or not.
 
 #### \[cmd\]: ci
 
@@ -214,7 +221,8 @@ npx fabrique ci release
 
 Starts the CI `release` workflow.
 
-> INFO: this command is automatically run from the github action `release.yml`.
+> [!NOTE]
+> This command is automatically run from the GitHub Action `release.yml`.
 
 #### \[cmd\]: refactor
 
@@ -229,8 +237,8 @@ npx fabrique refactor [from] [to]
 npx fabrique refactor my-component my-new-component
 ```
 
-> Refactors all files and directories having `my-component` as name into `my-new-component` (recursively).
-> AND all text-based files (ex: html, js, ts, css, etc...) containing `my-component` (or derived cases) into `my-new-component` (keeping the same case).
+> Refactors all files and directories whose name contains `my-component` into `my-new-component` (recursively),
+> and all text-based files (e.g. html, js, ts, css, etc.) containing `my-component` (or derived casings) into `my-new-component` (keeping the same casing).
 
 If we run this command with the following files structure:
 
@@ -271,9 +279,10 @@ function my_new_component(myNewComponent: MyNewComponent) {}
 ##### action
 
 This command refactors files and directories recursively from the `cwd` (by default, the current directory in which the script is executed).
-It preserves the case of the names (ex: `dash-case`, or `cameCase`).
+It preserves the casing of the names (e.g. `dash-case` or `camelCase`).
 
-> INFO: run the command inside the folder you want to refactor.
+> [!IMPORTANT]
+> Run the command inside the folder you want to refactor.
 
 ##### options
 
@@ -302,7 +311,8 @@ This command configures the basic rules of the GitHub repository of the current 
   - the CI check (`Check`) must pass, with an up-to-date branch, to allow the merge
 - a tag ruleset on release tags (`v*`): deletion and force-push are forbidden
 
-> INFO: requires the GitHub CLI (`gh`) to be installed and authenticated, with **administrator** permission on the repository.
+> [!IMPORTANT]
+> Requires the GitHub CLI (`gh`) to be installed and authenticated, with **administrator** permission on the repository.
 > The command is idempotent: it updates the existing rules instead of duplicating them.
 
 ##### options
