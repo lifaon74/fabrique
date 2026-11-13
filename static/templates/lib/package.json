@@ -18,7 +18,9 @@
     "fb:check:types": "node node_modules/@typescript/native/bin/tsc -p tsconfig.json --noEmit",
     "=== FB: RELEASE ===": "",
     "fb:manual:release": "fabrique release",
-    "fb:ci:release": "fabrique ci release"
+    "fb:ci:release": "fabrique ci release",
+    "=== FB: INIT ===": "",
+    "fb:setup-github-repository": "fabrique setup-github-repository"
   },
   "description": "{{description}}",
   "keywords": [],
