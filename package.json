@@ -1,6 +1,6 @@
 {
   "name": "fabrique",
-  "version": "2.0.34",
+  "version": "2.0.35",
   "type": "module",
   "main": "src/cli/cli.ts",
   "bin": "src/cli/cli.ts",
@@ -40,14 +40,14 @@
     "@types/node": "^26.6.6",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-istanbul": "^5.1.0",
-    "prettier": "^3.9.10",
+    "prettier": "^3.10.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "typescript": "npm:typescript@~6.0.3",
-    "vite": "^8.3.6",
+    "vite": "^8.3.8",
     "vitest": "^5.1.0"
   },
   "dependencies": {
-    "@inquirer/prompts": "^8.7.5",
+    "@inquirer/prompts": "^8.8.0",
     "chalk": "^6.0.1",
     "commander": "^15.1.0",
     "zod": "^4.6.7"
