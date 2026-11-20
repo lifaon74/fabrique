@@ -105,13 +105,15 @@ export function releaseProject({
       }
     }
 
-    if (dry) {
-      logger.debug(`(dry) consume changeset`);
-    } else {
-      await consumeChangesets({
-        cwd,
-        logger,
-      });
+    if (mode === 'prod') {
+      if (dry) {
+        logger.debug('(dry) consume changeset');
+      } else {
+        await consumeChangesets({
+          cwd,
+          logger,
+        });
+      }
     }
 
     {
