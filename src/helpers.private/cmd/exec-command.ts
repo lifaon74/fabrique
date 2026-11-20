@@ -2,6 +2,7 @@ import { type ChildProcess, spawn, type SpawnOptions } from 'node:child_process'
 import process from 'node:process';
 import { Readable } from 'node:stream';
 import { Logger } from '../log/logger.ts';
+import { quoteShellArgument } from './quote-shell-argument/quote-shell-argument.ts';
 
 export interface ExecCommandErrorOptions extends ErrorOptions {
   readonly command: string;
@@ -37,17 +38,19 @@ export function execCommand(
 ): Promise<string> {
   return new Promise<string>(
     (resolve: (output: string) => void, reject: (reason?: unknown) => void): void => {
-      const fullCommand: string = `${command} ${args
-        .map((arg: string): string => {
-          return !arg.startsWith('"') && arg.includes(' ') ? JSON.stringify(arg) : arg;
-        })
-        .join(' ')}`;
+      const shell: boolean | string = options?.shell ?? process.platform === 'win32';
+
+      // when a shell is used, the command and its arguments are joined into a single command line
+      // and parsed by the shell: arguments containing spaces must be quoted
+      const quotedArgs: readonly string[] = shell ? args.map(quoteShellArgument) : args;
+
+      const fullCommand: string = `${command} ${quotedArgs.join(' ')}`;
 
       logger.log(fullCommand);
 
-      const childProcess: ChildProcess = spawn(command, args, {
+      const childProcess: ChildProcess = spawn(command, [...quotedArgs], {
         cwd: process.cwd(),
-        shell: process.platform === 'win32',
+        shell,
         detached: false,
         stdio: 'pipe',
         ...options,

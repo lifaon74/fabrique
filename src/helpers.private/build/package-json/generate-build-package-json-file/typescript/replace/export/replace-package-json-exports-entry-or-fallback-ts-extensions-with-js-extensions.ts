@@ -2,7 +2,7 @@ import {
   isPackageJsonExportsEntry,
   isPackageJsonExportsFallback,
   type PackageJsonExportsEntryOrFallback,
-} from '../../../../../file/package-json/package-json-exports/package-json-exports.ts';
+} from '../../../../../../file/package-json/package-json-exports/package-json-exports.ts';
 import { replacePackageJsonExportsEntryTsExtensionsWithJsExtensions } from './replace-package-json-exports-entry-ts-extensions-with-js-extensions.ts';
 import { replacePackageJsonExportsFallbackTsExtensionsWithJsExtensions } from './replace-package-json-exports-fallback-ts-extensions-with-js-extensions.ts';
 

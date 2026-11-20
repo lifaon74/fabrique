@@ -1,7 +1,7 @@
 import type {
   PackageJsonExportsEntryObject,
   PackageJsonExportsEntryOrFallback,
-} from '../../../../../file/package-json/package-json-exports/package-json-exports.ts';
+} from '../../../../../../file/package-json/package-json-exports/package-json-exports.ts';
 import { replacePackageJsonExportsEntryOrFallbackTsExtensionsWithJsExtensions } from './replace-package-json-exports-entry-or-fallback-ts-extensions-with-js-extensions.ts';
 
 export function replacePackageJsonExportsEntryObjectTsExtensionsWithJsExtensions(

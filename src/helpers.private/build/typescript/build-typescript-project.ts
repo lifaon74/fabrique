@@ -90,7 +90,14 @@ export async function buildTypescriptProject({
   });
 
   await logger.asyncTask('compile typescript', async (logger: Logger): Promise<void> => {
-    await execCommandInherit(logger, 'tsc', ['-p', './tsconfig.build.json'], { cwd });
+    // NOTE: currently TypeScript 7 does not works well with type-checking and LSP, so we use it only to compile the TS files
+    // await execCommandInherit(logger, 'tsc', ['-p', './tsconfig.build.json'], { cwd });
+    await execCommandInherit(
+      logger,
+      'node',
+      ['node_modules/@typescript/native/bin/tsc', '-p', './tsconfig.build.json'],
+      { cwd },
+    );
   });
 
   await logger.asyncTask('build package.json', async (): Promise<void> => {

@@ -162,3 +162,10 @@ dist
 # misc
 .keys/
 .db/
+
+# vitest output artifacts (json reports)
+.vitest/
+
+# agent
+docs/superpowers/
+.superpowers/

@@ -2,7 +2,8 @@ import type { PackageJson } from '../../../file/package-json/package-json.ts';
 import { removeUndefinedProperties } from '../../../misc/object/remove-undefined-properties.ts';
 import type { BuildMode } from '../../build-mode/build-mode.ts';
 import { generatePackageJsonBuildVersion } from '../generate-package-json-build-version/generate-package-json-build-version.ts';
-import { replacePackageJsonExportsTsExtensionsWithJsExtensions } from './typescript/replace/replace-package-json-exports-ts-extensions-with-js-extensions.ts';
+import { replacePackageJsonBinTsExtensionsWithJsExtensions } from './typescript/replace/bin/replace-package-json-bin-ts-extensions-with-js-extensions.ts';
+import { replacePackageJsonExportsTsExtensionsWithJsExtensions } from './typescript/replace/export/replace-package-json-exports-ts-extensions-with-js-extensions.ts';
 import { replaceTsExtensionWithJsExtension } from './typescript/replace/replace-ts-extension-with-js-extension.ts';
 
 export interface GenerateBuildPackageJsonFileOptions {
@@ -27,6 +28,7 @@ export function generateBuildPackageJsonFile(
     dependencies,
     peerDependencies,
     optionalDependencies,
+    engines,
   }: PackageJson,
   { mode = 'prod' }: GenerateBuildPackageJsonFileOptions = {},
 ): PackageJson {
@@ -43,7 +45,7 @@ export function generateBuildPackageJsonFile(
     license,
     repository,
     main: main === undefined ? undefined : replaceTsExtensionWithJsExtension(main),
-    bin: bin === undefined ? undefined : replaceTsExtensionWithJsExtension(bin),
+    bin: bin === undefined ? undefined : replacePackageJsonBinTsExtensionsWithJsExtensions(bin),
     module: module === undefined ? undefined : replaceTsExtensionWithJsExtension(module),
     types,
     exports:
@@ -53,5 +55,6 @@ export function generateBuildPackageJsonFile(
     dependencies,
     peerDependencies,
     optionalDependencies,
+    engines,
   });
 }
