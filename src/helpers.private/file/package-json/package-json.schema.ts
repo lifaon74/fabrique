@@ -2,6 +2,7 @@ import * as z from 'zod';
 import { fabriqueConfigSchema } from '../../fabrique/fabrique-config.schema.ts';
 import { packageJsonBinSchema } from './package-json-bin/package-json-bin.schema.ts';
 import { packageJsonDependenciesSchema } from './package-json-dependencies/package-json-dependencies.schema.ts';
+import { packageJsonEnginesSchema } from './package-json-engines/package-json-engines.schema.ts';
 
 export const packageJsonSchema = z
   .object({
@@ -27,6 +28,7 @@ export const packageJsonSchema = z
     devDependencies: packageJsonDependenciesSchema.optional(),
     peerDependencies: packageJsonDependenciesSchema.optional(),
     optionalDependencies: packageJsonDependenciesSchema.optional(),
+    engines: packageJsonEnginesSchema.optional(),
     // fabrique
     fabrique: fabriqueConfigSchema.optional(),
   })

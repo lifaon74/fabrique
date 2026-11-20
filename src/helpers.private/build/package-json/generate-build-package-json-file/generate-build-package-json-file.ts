@@ -28,6 +28,7 @@ export function generateBuildPackageJsonFile(
     dependencies,
     peerDependencies,
     optionalDependencies,
+    engines,
   }: PackageJson,
   { mode = 'prod' }: GenerateBuildPackageJsonFileOptions = {},
 ): PackageJson {
@@ -54,5 +55,6 @@ export function generateBuildPackageJsonFile(
     dependencies,
     peerDependencies,
     optionalDependencies,
+    engines,
   });
 }
