@@ -1,6 +1,7 @@
 import type { FabriqueConfig } from '../../fabrique/fabrique-config.ts';
 import type { PackageJsonBin } from './package-json-bin/package-json-bin.ts';
 import type { PackageJsonDependencies } from './package-json-dependencies/package-json-dependencies.ts';
+import type { PackageJsonEngines } from './package-json-engines/package-json-engines.ts';
 import type { PackageJsonExports } from './package-json-exports/package-json-exports.ts';
 
 export interface PackageJson {
@@ -26,6 +27,7 @@ export interface PackageJson {
   readonly devDependencies?: PackageJsonDependencies;
   readonly peerDependencies?: PackageJsonDependencies;
   readonly optionalDependencies?: PackageJsonDependencies;
+  readonly engines?: PackageJsonEngines;
   // fabrique
   readonly fabrique?: FabriqueConfig;
 }
