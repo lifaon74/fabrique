@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { BRANCH_RULES_RULESET_NAME, GITHUB_ACTIONS_APP_ID } from '../github-ruleset.ts';
+import {
+  BRANCH_RULES_RULESET_NAME,
+  GITHUB_ACTIONS_APP_ID,
+  GITHUB_ACTIONS_BYPASS_ACTOR,
+} from '../github-ruleset.ts';
 import { buildBranchRulesetPayload } from './build-branch-ruleset-payload.ts';
 
 describe('buildBranchRulesetPayload', () => {
@@ -14,7 +18,7 @@ describe('buildBranchRulesetPayload', () => {
       name: BRANCH_RULES_RULESET_NAME,
       target: 'branch',
       enforcement: 'active',
-      bypass_actors: [],
+      bypass_actors: [GITHUB_ACTIONS_BYPASS_ACTOR],
       conditions: {
         ref_name: {
           include: ['refs/heads/main', 'refs/heads/develop'],

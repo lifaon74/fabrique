@@ -8,6 +8,7 @@ import type { Logger } from '../../../helpers.private/log/logger.ts';
 import { parseSemverStrict, type Semver } from '../../../helpers.private/misc/semver/semver.ts';
 import { isNpmPackagePublished } from '../../../helpers.private/npm/is-npm-version-published/is-npm-package-published.ts';
 import { toAbsolutePath } from '../../../helpers.private/path/to-absolute-path.ts';
+import { commitVersionBump } from '../../../helpers.private/release/commit-version-bump/commit-version-bump.ts';
 import { releaseModeToNpmTag } from '../../../helpers.private/release/release-mode/release-mode-to-npm-tag.ts';
 import type { ReleaseMode } from '../../../helpers.private/release/release-mode/release-mode.ts';
 import { buildProject } from '../build-project/build-project.ts';
@@ -17,6 +18,7 @@ export interface ReleaseProjectOptions {
   readonly dry?: boolean;
   readonly cwd?: string;
   readonly output?: string;
+  readonly gitIdentity?: 'bot' | 'local';
   readonly logger: Logger;
 }
 
@@ -28,6 +30,7 @@ export function releaseProject({
   dry = false,
   cwd = process.cwd(),
   output = 'dist',
+  gitIdentity = 'local',
   logger,
 }: ReleaseProjectOptions): Promise<void> {
   return logger.asyncTask('release', async (logger: Logger): Promise<void> => {
@@ -108,9 +111,16 @@ export function releaseProject({
     if (mode === 'prod') {
       if (dry) {
         logger.debug('(dry) consume changeset');
+        logger.debug('(dry) commit the version bump');
       } else {
         await consumeChangesets({
           cwd,
+          logger,
+        });
+
+        await commitVersionBump({
+          cwd,
+          identity: gitIdentity,
           logger,
         });
       }

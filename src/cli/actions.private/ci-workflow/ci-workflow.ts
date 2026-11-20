@@ -7,7 +7,7 @@ import type {
 import type { Logger } from '../../../helpers.private/log/logger.ts';
 import { getEnvCiReleaseDryRun } from '../../../helpers.private/release/env/get-env-ci-release-dry-run.ts';
 import type { ReleaseMode } from '../../../helpers.private/release/release-mode/release-mode.ts';
-import { releaseProject } from '../release-project/release-project.ts';
+import { releaseProject, type ReleaseProjectOptions } from '../release-project/release-project.ts';
 
 export interface CiWorkflowOptions {
   readonly type: 'release' | string;
@@ -45,6 +45,9 @@ async function ciRelease({ githubCiConfig, logger }: CiReleaseOptions): Promise<
   const dryRun: boolean = getEnvCiReleaseDryRun();
   // const jobUrl: string = `${githubCiConfig.server_url}/${githubCiConfig.repository}/actions/runs/${githubCiConfig.run_id}`;
 
+  const pushOptions: Pick<ReleaseProjectOptions, 'gitIdentity'> =
+    githubCiConfig.event_name === 'push' ? { gitIdentity: 'bot' } : {};
+
   if (!ciReleaseContext.shouldRelease) {
     logger.info(
       `SKIP: CI release disabled for ${githubCiConfig.event_name}:${ciReleaseContext.branchName} (missing required PR label "dev").`,
@@ -55,6 +58,7 @@ async function ciRelease({ githubCiConfig, logger }: CiReleaseOptions): Promise<
   await releaseProject({
     mode: ciReleaseContext.mode,
     dry: dryRun,
+    ...pushOptions,
     logger,
   });
 }

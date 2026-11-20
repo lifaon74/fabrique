@@ -1,6 +1,7 @@
 import {
   BRANCH_RULES_RULESET_NAME,
   GITHUB_ACTIONS_APP_ID,
+  GITHUB_ACTIONS_BYPASS_ACTOR,
   type GithubRulesetPayload,
 } from '../github-ruleset.ts';
 
@@ -24,7 +25,7 @@ export function buildBranchRulesetPayload({
     name: BRANCH_RULES_RULESET_NAME,
     target: 'branch',
     enforcement: 'active',
-    bypass_actors: [],
+    bypass_actors: [GITHUB_ACTIONS_BYPASS_ACTOR],
     conditions: {
       ref_name: {
         include: branches.map((branch: string): string => `refs/heads/${branch}`),
