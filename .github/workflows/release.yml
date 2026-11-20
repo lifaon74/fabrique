@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       id-token: write  # Required for OIDC
-      contents: read
+      contents: write  # Required to push the version bump commit
 
     steps:
       - name: Checkout repository
@@ -58,6 +58,7 @@ jobs:
         run: yarn fb:ci:release
         env:
           GITHUB_CI_CONFIG: ${{ toJson(github) }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Release package (dry-run for fork PR)
         if: >-
@@ -67,4 +68,5 @@ jobs:
         run: yarn fb:ci:release
         env:
           GITHUB_CI_CONFIG: ${{ toJson(github) }}
+          GITHUB_TOKEN: ''  # fork PR: untrusted code, the dry run needs no changelog links
           CI_RELEASE_DRY_RUN: 'true'
