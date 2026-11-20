@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 import process from 'node:process';
+import { consumeChangesets } from '../../../helpers.private/changeset/consume-changesets.ts';
 import { execCommandInherit } from '../../../helpers.private/cmd/exec-command.ts';
 import type { PackageJson } from '../../../helpers.private/file/package-json/package-json.ts';
 import { readPackageJsonFile } from '../../../helpers.private/file/package-json/read-package-json-file.ts';
@@ -102,6 +103,15 @@ export function releaseProject({
           cwd: toAbsolutePath(output, cwd),
         });
       }
+    }
+
+    if (dry) {
+      logger.debug(`(dry) consume changeset`);
+    } else {
+      await consumeChangesets({
+        cwd,
+        logger,
+      });
     }
 
     {

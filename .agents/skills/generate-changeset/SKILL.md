@@ -35,7 +35,28 @@ List only the packages/workspaces that were meaningfully affected and require a 
 - **Content:** Focus on _what_ changed and _why_ it matters to the user, not _how_ it was implemented. (e.g., Use "Fixed a crash when loading large images" instead of "Refactored image processing loop to use async iterators").
 - **Length:** Keep it brief. Use a short paragraph or a few bullet points if multiple distinct user-facing changes occurred.
 
-## 5. Strict Output Format
+## 5. Add the Pull Request Link
+
+The changelog template renders a link next to the summary. Add a `pr:` line as the first
+line of the summary when the change is part of a pull request:
+
+```md
+---
+'fabrique': minor
+---
+
+pr: #42
+
+Here is the human-readable, user-facing summary of the changes.
+```
+
+- `pr: #42` (or `pr: 42`) is parsed by the changelog generator, rendered as a link, and
+  removed from the displayed summary.
+- It must sit at the start of its own line to be parsed.
+- Omit it when the change does not belong to a pull request: the summary simply renders
+  without any link.
+
+## 6. Strict Output Format
 
 You must output **ONLY** the raw changeset content. Do not include greetings, explanations, or wrap the output in markdown code blocks (` ``` `).
 
@@ -50,7 +71,12 @@ The format MUST strictly follow this structure:
 Here is the human-readable, user-facing summary of the changes.
 ```
 
-## 6. Save the File
+## 7. Save and Commit the File
 
-Create a new markdown file inside the `../../../.changeset` directory at the root of the project.
-Name the file using a short, descriptive slug based on the core change (e.g., `.changeset/fix-image-loading-crash.md` or `.changeset/add-dark-mode.md`). Write the strictly formatted content from Step 5 into this file.
+Create a new markdown file inside the `.changeset` directory at the root of the project
+(from this skill's location: `../../../.changeset`).
+Name the file using a short, descriptive slug based on the core change (e.g., `.changeset/fix-image-loading-crash.md` or `.changeset/add-dark-mode.md`), unique across the repository. Write the strictly formatted content from Step 6 into this file.
+
+Commit the changeset as part of the pull request: the release flow consumes it from the
+integration branch after the merge, and the pull request link only resolves for changeset
+files that are committed.

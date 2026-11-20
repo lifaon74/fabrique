@@ -1,6 +1,7 @@
-import { rm } from 'node:fs/promises';
+import { cp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import process from 'node:process';
+import { consumeChangesets } from '../../changeset/consume-changesets.ts';
 import { execCommandInherit } from '../../cmd/exec-command.ts';
 import { readPackageJsonFile } from '../../file/package-json/read-package-json-file.ts';
 import { writeJsonFileSafe } from '../../file/write-json-file-safe.ts';
@@ -100,10 +101,32 @@ export async function buildTypescriptProject({
     );
   });
 
+  const outputPackageJsonPath: string = join(outputDirectory, 'package.json');
+
+  await logger.asyncTask('generate CHANGELOG', async (logger: Logger): Promise<void> => {
+    const outputChangesetsDirectoryPath: string = join(outputDirectory, '.changeset');
+
+    await Promise.all([
+      cp(join(cwd, 'package.json'), outputPackageJsonPath),
+      cp(join(cwd, '.changeset'), outputChangesetsDirectoryPath, {
+        recursive: true,
+        force: true,
+      }),
+    ]);
+
+    await consumeChangesets({
+      targetDirectory: outputDirectory,
+      cwd,
+      logger,
+    });
+
+    await rm(join(outputDirectory, '.changeset'), { recursive: true, force: true });
+  });
+
   await logger.asyncTask('build package.json', async (): Promise<void> => {
     await writeJsonFileSafe(
-      join(outputDirectory, 'package.json'),
-      generateTypescriptBuildPackageJsonFile(await readPackageJsonFile(join(cwd, 'package.json')), {
+      outputPackageJsonPath,
+      generateTypescriptBuildPackageJsonFile(await readPackageJsonFile(outputPackageJsonPath), {
         ...options,
         indexFilePath: relativePath(absoluteIndexFilePath, cwd),
         protectedIndexFilePath:
