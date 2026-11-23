@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       id-token: write # Required for OIDC
-      contents: write # Required to push the version bump commit
+      contents: write # GITHUB_TOKEN fallback (fork checkouts, API reads): the version bump push uses the release deploy key
 
     steps:
       - name: Checkout repository

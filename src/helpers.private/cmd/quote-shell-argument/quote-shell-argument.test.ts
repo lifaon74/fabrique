@@ -12,6 +12,10 @@ describe('quoteShellArgument', () => {
     expect(quoteShellArgument('--input')).toBe('--input');
   });
 
+  it('should leave shell metacharacters untouched so that redirects survive quoting', () => {
+    expect(quoteShellArgument('<')).toBe('<');
+  });
+
   it('should not double-quote already quoted arguments', () => {
     expect(quoteShellArgument('"already quoted"')).toBe('"already quoted"');
   });

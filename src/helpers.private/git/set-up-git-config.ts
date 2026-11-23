@@ -12,8 +12,8 @@ export interface SetUpGitGlobalConfigOptions extends SpawnOptions {
  * Init the git config.
  */
 export async function setUpGitConfig({
-  userName = 'github-actions',
-  userEmail = 'github-actions@github.com',
+  userName = 'github-actions[bot]',
+  userEmail = '41898282+github-actions[bot]@users.noreply.github.com',
   logger,
   ...spawnOptions
 }: SetUpGitGlobalConfigOptions): Promise<void> {
