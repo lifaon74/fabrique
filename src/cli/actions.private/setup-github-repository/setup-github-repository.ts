@@ -1,19 +1,27 @@
 import { randomUUID } from 'node:crypto';
-import { rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execCommand } from '../../../helpers.private/cmd/exec-command.ts';
+import { createDeployKey } from '../../../helpers.private/github/deploy-key/create-deploy-key/create-deploy-key.ts';
+import { deleteDeployKey } from '../../../helpers.private/github/deploy-key/delete-deploy-key/delete-deploy-key.ts';
+import { findDeployKeysByTitle } from '../../../helpers.private/github/deploy-key/find-deploy-keys-by-title/find-deploy-keys-by-title.ts';
+import { generateKeyPair } from '../../../helpers.private/github/deploy-key/generate-key-pair/generate-key-pair.ts';
 import { buildBranchRulesetPayload } from '../../../helpers.private/github/github-ruleset/build-branch-ruleset-payload/build-branch-ruleset-payload.ts';
 import { buildTagRulesetPayload } from '../../../helpers.private/github/github-ruleset/build-tag-ruleset-payload/build-tag-ruleset-payload.ts';
 import {
   type GithubRulesetPayload,
   type GithubRulesetSummary,
 } from '../../../helpers.private/github/github-ruleset/github-ruleset.ts';
+import { setActionsSecret } from '../../../helpers.private/github/set-actions-secret/set-actions-secret.ts';
 import type { Logger } from '../../../helpers.private/log/logger.ts';
 
 const PROTECTED_BRANCHES: readonly string[] = ['main', 'develop'];
 const RELEASE_TAG_PATTERN: string = 'v*';
 const DEFAULT_REQUIRED_CHECKS: readonly string[] = ['Check'];
+const DEPLOY_KEY_TITLE: string = 'fabrique-release';
+const DEPLOY_KEY_NAME: string = 'id_ed25519';
+const RELEASE_DEPLOY_KEY_SECRET: string = 'RELEASE_DEPLOY_KEY';
 
 export interface SetupGithubRepositoryOptions {
   readonly dry?: boolean;
@@ -49,6 +57,14 @@ export function setupGithubRepository({
     }
 
     await updateRepositorySettings({ repository, dry, cwd, logger });
+
+    const oldKeyIds: readonly number[] = await rotateReleaseDeployKey({
+      repository,
+      dry,
+      cwd,
+      logger,
+    });
+
     await upsertRuleset({
       repository,
       dry,
@@ -67,6 +83,8 @@ export function setupGithubRepository({
       logger,
       payload: buildTagRulesetPayload({ pattern: RELEASE_TAG_PATTERN }),
     });
+
+    await deleteOldDeployKeys({ repository, oldKeyIds, dry, cwd, logger });
   });
 }
 
@@ -190,6 +208,119 @@ async function upsertRuleset({
     });
   } finally {
     await rm(payloadFile, { force: true });
+  }
+}
+
+interface RotateReleaseDeployKeyOptions {
+  readonly repository: GithubRepository;
+  readonly dry: boolean;
+  readonly cwd: string;
+  readonly logger: Logger;
+}
+
+/**
+ * Creates a fresh write deploy key and stores its private half in the `RELEASE_DEPLOY_KEY`
+ * Actions secret, then returns the ids of the deploy keys to remove (the previous release
+ * deploy keys).
+ *
+ * The secret is set BEFORE any ruleset update: a ruleset failure then leaves the previous
+ * key and the previous ruleset consistent, and a re-run repairs everything.
+ */
+async function rotateReleaseDeployKey({
+  repository,
+  dry,
+  cwd,
+  logger,
+}: RotateReleaseDeployKeyOptions): Promise<readonly number[]> {
+  const oldKeyIds: readonly number[] = await findDeployKeysByTitle({
+    repository: repository.nameWithOwner,
+    title: DEPLOY_KEY_TITLE,
+    cwd,
+    logger,
+  });
+
+  if (dry) {
+    logger.debug(
+      `(dry) ssh-keygen -t ed25519 -N '' -C ${DEPLOY_KEY_TITLE} -f <temporary directory>/${DEPLOY_KEY_NAME} -q`,
+    );
+    logger.debug(
+      `(dry) gh api --method POST repos/${repository.nameWithOwner}/keys -f title=${DEPLOY_KEY_TITLE} -f key=<${DEPLOY_KEY_TITLE} public key> -F read_only=false`,
+    );
+    logger.debug(
+      `(dry) gh secret set ${RELEASE_DEPLOY_KEY_SECRET} --repo ${repository.nameWithOwner} < <${DEPLOY_KEY_TITLE} private key>`,
+    );
+
+    for (const oldKeyId of oldKeyIds) {
+      logger.debug(
+        `(dry) gh api --method DELETE repos/${repository.nameWithOwner}/keys/${oldKeyId}`,
+      );
+    }
+
+    return oldKeyIds;
+  }
+
+  const tempDirectory: string = await mkdtemp(join(tmpdir(), 'fabrique-deploy-key-'));
+
+  try {
+    const { privateKeyPath, publicKey } = await generateKeyPair({
+      directory: tempDirectory,
+      name: DEPLOY_KEY_NAME,
+      comment: DEPLOY_KEY_TITLE,
+      logger,
+    });
+
+    await createDeployKey({
+      repository: repository.nameWithOwner,
+      title: DEPLOY_KEY_TITLE,
+      publicKey,
+      cwd,
+      logger,
+    });
+
+    await setActionsSecret({
+      repository: repository.nameWithOwner,
+      name: RELEASE_DEPLOY_KEY_SECRET,
+      privateKeyPath,
+      cwd,
+      logger,
+    });
+
+    return oldKeyIds;
+  } finally {
+    await rm(tempDirectory, { recursive: true, force: true });
+  }
+}
+
+interface DeleteOldDeployKeysOptions {
+  readonly repository: GithubRepository;
+  readonly oldKeyIds: readonly number[];
+  readonly dry: boolean;
+  readonly cwd: string;
+  readonly logger: Logger;
+}
+
+/**
+ * Removes the previous release deploy keys, AFTER the ruleset updates: the ruleset PUT
+ * replaces the bypass actors wholesale, so the old keys are unreferenced by then.
+ */
+async function deleteOldDeployKeys({
+  repository,
+  oldKeyIds,
+  dry,
+  cwd,
+  logger,
+}: DeleteOldDeployKeysOptions): Promise<void> {
+  if (dry) {
+    return; // the deletions were already logged by "rotateReleaseDeployKey"
+  }
+
+  for (const oldKeyId of oldKeyIds) {
+    await deleteDeployKey({
+      repository: repository.nameWithOwner,
+      keyId: oldKeyId,
+      cwd,
+      logger,
+    });
   }
 }
 
