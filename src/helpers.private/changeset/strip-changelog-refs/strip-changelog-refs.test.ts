@@ -33,4 +33,23 @@ describe('stripChangelogRefs', () => {
       ].join('\n'),
     );
   });
+
+  it('should strip refs regardless of case and aliases', () => {
+    const content: string = [
+      '---',
+      "'fabrique': minor",
+      '---',
+      '',
+      'PR: #21',
+      'pull: #22',
+      'Pull request: #23',
+      'Commit: c9bf0a2',
+      'AUTHOR: lifaon74',
+      'user: lifaon74',
+    ].join('\n');
+
+    expect(stripChangelogRefs(content)).toBe(
+      ['---', "'fabrique': minor", '---', '', '', '', '', '', '', ''].join('\n'),
+    );
+  });
 });

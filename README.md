@@ -391,5 +391,6 @@ Versions and changelogs are automated with [Changesets](https://github.com/chang
 
 > [!TIP]
 > Changelog links are resolved through the GitHub API. When building or releasing locally with pending
-> changesets, export a `GITHUB_TOKEN` to avoid the unauthenticated rate limits. Pull requests from
+> changesets, export a `GITHUB_TOKEN`: without it, the builds skip the changelog links, and the release
+> fails at the changeset consumption. Pull requests from
 > forks never receive it: their release runs in dry mode without changelog links.
