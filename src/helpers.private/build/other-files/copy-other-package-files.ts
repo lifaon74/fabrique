@@ -18,13 +18,15 @@ export async function copyOtherPackageFiles({
   outputDirectory = toAbsolutePath(outputDirectory, cwd);
 
   await Promise.all(
-    ['README.md', 'CONTRIBUTING.md', 'LICENSE'].map(async (entry: string): Promise<void> => {
-      if (await optionalCopy(join(cwd, entry), join(outputDirectory, entry))) {
-        logger.info(`Copied: ${entry}`);
-      } else {
-        logger.warn(`Missing (skipped): ${entry}`);
-      }
-    }),
+    ['README.md', 'CONTRIBUTING.md', 'LICENSE', 'CHANGELOG.md'].map(
+      async (entry: string): Promise<void> => {
+        if (await optionalCopy(join(cwd, entry), join(outputDirectory, entry))) {
+          logger.info(`Copied: ${entry}`);
+        } else {
+          logger.warn(`Missing (skipped): ${entry}`);
+        }
+      },
+    ),
   );
 
   if (

@@ -77,7 +77,7 @@ npx fabrique create lib @my-organization/my-library
 ###### action
 
 This command creates a new library with the name `[name]` inside the folder `./[name]` (in our example: `./@my-organization/my-library`).
-You'll be prompted for a description, an author and a git URL.
+You'll be prompted for a description, an author and a git URL (required: it feeds the repository metadata and the changelog links).
 
 > [!TIP]
 > Run the command where you want to create your project.
@@ -106,7 +106,8 @@ It tries to be non-destructive.
 
 > [!WARNING]
 > The files belonging to the `fabrique` template are **overwritten** on each upgrade.
-> Only `src/**/*`, `README.md`, `LICENSE`, `package.json`, `yarn.lock` and `.github/auto_assign.yml` are preserved: every other file present in the template (e.g. `.github/workflows/*`, `tsconfig.json`, `vitest.config.ts`, `.yarnrc.yml`, `.prettierrc`, `.nvmrc`, and the `fabrique/` directory) is replaced by the template's version.
+> Only `src/**/*`, `README.md`, `LICENSE`, `package.json`, `yarn.lock` and `.github/auto_assign.yml` are preserved: every other file present in the template (e.g. `.github/workflows/*`, `tsconfig.json`, `vitest.config.ts`, `.yarnrc.yml`, `.prettierrc`, `.nvmrc`, `.changeset/config.json`, and the `fabrique/` directory) is replaced by the template's version.
+> The `{{repo}}` placeholder of the overwritten `.changeset/config.json` is automatically resolved again from your `package.json` repository url.
 > Do not hand-edit these files: your changes would be silently lost on the next upgrade. Instead, put your custom configuration in separate files (e.g. an additional workflow file, or a dedicated tsconfig extending the generated one).
 > The `package.json` scripts are merged: your scripts are kept as long as they are not prefixed with `fb:` (they are moved under the `=== FB: CUSTOM SCRIPTS ===` section), while `fb:`-prefixed scripts are considered fabrique-owned and replaced by the template's versions.
 
@@ -142,6 +143,7 @@ Summary:
 - You can exclude `protected` files or directories by adding the suffix `.protected` to the file or directory name.
   These files are exported into a separate `src/index.protected.ts` file, which can be imported by `import * from '@my-organization/my-library/protected'`.
 - A ready-to-publish package is generated in the `dist` folder.
+- The pending changesets (`.changeset/*.md`) are consumed inside `dist`: the package version is bumped and the `CHANGELOG.md` is generated (the repository root is left untouched).
 
 <details>
 
@@ -194,6 +196,8 @@ This command releases an existing `fabrique` project, performing the following s
   - if `build` does not exist, runs `fabrique build` as a replacement.
 - checks that the resulting _build artifact_ can be published on npm.
 - publishes the package on npm.
+- in `prod` mode only: consumes the pending changesets (`.changeset/*.md`) — bumps the repository version, updates the `CHANGELOG.md`, removes the consumed changesets — then commits and pushes the update to the release branch (as `github-actions[bot]` when run from the CI).
+  The push authenticates with the release deploy key, and the commit message carries `[skip ci]` so it does not re-trigger the release.
 
 > [!IMPORTANT]
 > Run the command **inside** the `fabrique` project.
@@ -309,6 +313,12 @@ This command configures the basic rules of the GitHub repository of the current 
 - a branch ruleset on `main` and `develop`:
   - push, force-push and deletion are forbidden: changes must go through a pull request
   - the CI check (`Check`) must pass, with an up-to-date branch, to allow the merge
+  - the `fabrique-release` write deploy key can bypass the rules: the release workflow pushes
+    the version bump commit with it. Its private key is stored in the `RELEASE_DEPLOY_KEY`
+    Actions secret and is rotated on each run of this command.
+    Note: GitHub scopes the `DeployKey` bypass to the key type — while it is configured, any
+    write deploy key of the repository (including ones you add for other tools) can bypass
+    these rules.
 - a tag ruleset on release tags (`v*`): deletion and force-push are forbidden
 
 > [!IMPORTANT]
@@ -345,3 +355,42 @@ You may get help on individual commands:
 ```shell
 npx fabrique create -h
 ```
+
+### Changelog and releases
+
+Versions and changelogs are automated with [Changesets](https://github.com/changesets/changesets):
+
+- every pull request that should affect the published package carries a changeset file in `.changeset/`:
+  it declares the package and the bump type (`patch`, `minor`, `major`), followed by a user-facing
+  summary prefixed with a `pr: #<pull request number>` line so the changelog links back to the pull
+  request. The agent skill `generate-changeset` creates it for you, or write it by hand:
+
+  ```md
+  ---
+  'my-library': minor
+  ---
+
+  pr: #42
+
+  Added a dark mode to the exported components.
+  ```
+
+- on merge to `main`, the release workflow publishes the package, then consumes the pending changesets:
+  it bumps the version, updates the `CHANGELOG.md`, removes the consumed changesets and pushes a
+  version bump commit back to `main` through the release deploy key (as `github-actions[bot]`).
+- pull requests labeled `dev` and pushes to `develop` publish suffixed versions
+  (e.g. `2.0.39-dev.1234567890123`): they never consume the changesets nor touch the repository version.
+- every package published from pending changesets ships a generated `CHANGELOG.md`.
+
+> [!NOTE]
+> Manual version bumps are no longer needed: a changeset is the only required release declaration.
+
+> [!IMPORTANT]
+> Existing repositories must re-run `fabrique setup-github-repository` once: the branch ruleset must
+> allow the `fabrique-release` deploy key to push the version bump commit.
+
+> [!TIP]
+> Changelog links are resolved through the GitHub API. When building or releasing locally with pending
+> changesets, export a `GITHUB_TOKEN`: without it, the builds skip the changelog links, and the release
+> fails at the changeset consumption. Pull requests from
+> forks never receive it: their release runs in dry mode without changelog links.

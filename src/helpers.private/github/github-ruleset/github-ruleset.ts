@@ -3,6 +3,16 @@
  */
 export const GITHUB_ACTIONS_APP_ID = 15368;
 
+export type GithubRulesetBypassActorType =
+  'RepositoryRole' | 'Team' | 'Integration' | 'OrganizationAdmin' | 'DeployKey' | 'User';
+
+export interface GithubRulesetBypassActor {
+  /** The id of the actor, when the actor type has one (`null` for `DeployKey` and `OrganizationAdmin`). */
+  readonly actor_id: number | null;
+  readonly actor_type: GithubRulesetBypassActorType;
+  readonly bypass_mode: 'always' | 'pull_request' | 'exempt';
+}
+
 /**
  * The name of the ruleset protecting the release branches (`main` and `develop`).
  * The name is used to identify the ruleset on updates: it must remain stable.
@@ -48,9 +58,10 @@ export interface GithubRulesetPayload {
   readonly target: GithubRulesetTarget;
   readonly enforcement: GithubRulesetEnforcement;
   /**
-   * Always empty: nobody bypasses the rules, not even repository administrators.
+   * The actors allowed to bypass the rules: a write deploy key, so the release workflow
+   * can push the version bump commit to the protected release branches.
    */
-  readonly bypass_actors: readonly [];
+  readonly bypass_actors: readonly GithubRulesetBypassActor[];
   readonly conditions: {
     readonly ref_name: {
       readonly include: readonly string[];

@@ -1,6 +1,9 @@
-import { rm } from 'node:fs/promises';
+import { cp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import process from 'node:process';
+import { consumeChangesets } from '../../changeset/consume-changesets.ts';
+import { listPendingChangesets } from '../../changeset/list-pending-changesets/list-pending-changesets.ts';
+import { stripChangelogRefs } from '../../changeset/strip-changelog-refs/strip-changelog-refs.ts';
 import { execCommandInherit } from '../../cmd/exec-command.ts';
 import { readPackageJsonFile } from '../../file/package-json/read-package-json-file.ts';
 import { writeJsonFileSafe } from '../../file/write-json-file-safe.ts';
@@ -100,10 +103,59 @@ export async function buildTypescriptProject({
     );
   });
 
+  const outputPackageJsonPath: string = join(outputDirectory, 'package.json');
+
+  await logger.asyncTask('copy other files', async (logger: Logger): Promise<void> => {
+    await copyOtherPackageFiles({
+      outputDirectory,
+      cwd,
+      logger,
+    });
+  });
+
+  await logger.asyncTask('generate CHANGELOG', async (logger: Logger): Promise<void> => {
+    const outputChangesetsDirectoryPath: string = join(outputDirectory, '.changeset');
+
+    await Promise.all([
+      cp(join(cwd, 'package.json'), outputPackageJsonPath),
+      cp(join(cwd, '.changeset'), outputChangesetsDirectoryPath, {
+        recursive: true,
+        force: true,
+      }),
+    ]);
+
+    if (!process.env['GITHUB_TOKEN']) {
+      // without a token, the changelog generator fails to resolve the "pr:", "commit:" and
+      // "author:" refs of the changesets and aborts the whole consumption: strip them from
+      // the copies so the build continues with a link-less changelog
+      logger.warn('GITHUB_TOKEN is not set: changelog links are skipped.');
+      const pendingChangesets: readonly string[] = await listPendingChangesets({
+        cwd: outputDirectory,
+      });
+      await Promise.all(
+        pendingChangesets.map(async (entry: string): Promise<void> => {
+          const pendingChangesetPath: string = join(outputChangesetsDirectoryPath, entry);
+          await writeFile(
+            pendingChangesetPath,
+            stripChangelogRefs(await readFile(pendingChangesetPath, 'utf8')),
+          );
+        }),
+      );
+    }
+
+    await consumeChangesets({
+      targetDirectory: outputDirectory,
+      cwd,
+      logger,
+    });
+
+    await rm(join(outputDirectory, '.changeset'), { recursive: true, force: true });
+  });
+
   await logger.asyncTask('build package.json', async (): Promise<void> => {
     await writeJsonFileSafe(
-      join(outputDirectory, 'package.json'),
-      generateTypescriptBuildPackageJsonFile(await readPackageJsonFile(join(cwd, 'package.json')), {
+      outputPackageJsonPath,
+      generateTypescriptBuildPackageJsonFile(await readPackageJsonFile(outputPackageJsonPath), {
         ...options,
         indexFilePath: relativePath(absoluteIndexFilePath, cwd),
         protectedIndexFilePath:
@@ -112,13 +164,5 @@ export async function buildTypescriptProject({
             : relativePath(absoluteProtectedIndexFilePath, cwd),
       }),
     );
-  });
-
-  await logger.asyncTask('copy other files', async (logger: Logger): Promise<void> => {
-    await copyOtherPackageFiles({
-      outputDirectory,
-      cwd,
-      logger,
-    });
   });
 }

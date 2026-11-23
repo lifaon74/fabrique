@@ -1,10 +1,12 @@
 import { confirm, select } from '@inquirer/prompts';
-import { cp, glob, rm } from 'node:fs/promises';
+import { cp, glob, readFile, rm } from 'node:fs/promises';
 import { join, relative } from 'node:path';
 import { execCommandInherit } from '../../../helpers.private/cmd/exec-command.ts';
 import type { FabriqueConfig } from '../../../helpers.private/fabrique/fabrique-config.ts';
+import { doesFileExist } from '../../../helpers.private/file/does-file-exist.ts';
 import type { PackageJson } from '../../../helpers.private/file/package-json/package-json.ts';
 import { readPackageJsonFile } from '../../../helpers.private/file/package-json/read-package-json-file.ts';
+import { writeFileSafe } from '../../../helpers.private/file/write-file-safe.ts';
 import { writeJsonFileSafe } from '../../../helpers.private/file/write-json-file-safe.ts';
 import { gitAddAllFiles } from '../../../helpers.private/git/git-add-all-files.ts';
 import type { Logger } from '../../../helpers.private/log/logger.ts';
@@ -13,6 +15,8 @@ import {
   ROOT_DIRECTORY,
   getTemplateDirectoryPath,
 } from '../../../helpers.private/misc/paths.constant.ts';
+import { replacePattern } from '../../../helpers.private/misc/replace-pattern.ts';
+import { parseOwnerRepoFromGitUrl } from '../../../helpers.private/npm/parse-owner-repo-from-git-url/parse-owner-repo-from-git-url.ts';
 import { removeTrailingSlash } from '../../../helpers.private/path/remove-traling-slash.ts';
 
 export interface UpgradeProjectOptions {
@@ -94,6 +98,8 @@ export function upgradeProject({ force = false, logger }: UpgradeProjectOptions)
           logger,
         }),
       ]);
+
+      await resolveChangesetRepo({ projectDirectory, projectPackage, logger });
 
       // update dependencies
       await execCommandInherit(logger, 'yarn', ['install'], {
@@ -221,4 +227,46 @@ async function upgradeProjectPackage({
   logger.info('merge: package.json');
 
   await writeJsonFileSafe(join(projectDirectory, 'package.json'), newPackageJson);
+}
+
+interface ResolveChangesetRepoOptions {
+  readonly projectDirectory: string;
+  readonly projectPackage: PackageJson;
+  readonly logger: Logger;
+}
+
+/**
+ * Resolves the `{{repo}}` placeholder of the copied changeset config with the
+ * `owner/repo` found in the package repository url.
+ */
+async function resolveChangesetRepo({
+  projectDirectory,
+  projectPackage,
+  logger,
+}: ResolveChangesetRepoOptions): Promise<void> {
+  const configPath: string = join(projectDirectory, '.changeset', 'config.json');
+
+  if (!(await doesFileExist(configPath))) {
+    return;
+  }
+
+  const content: string = await readFile(configPath, { encoding: 'utf8' });
+
+  if (!content.includes('{{repo}}')) {
+    return;
+  }
+
+  const repo: string | undefined = parseOwnerRepoFromGitUrl(
+    (projectPackage.repository as { url?: string } | undefined)?.url ?? '',
+  );
+
+  if (repo === undefined) {
+    logger.warn(
+      'Unable to resolve {{repo}} in .changeset/config.json: no owner/repo found in the package repository url.',
+    );
+    return;
+  }
+
+  await writeFileSafe(configPath, replacePattern(content, { repo }));
+  logger.info('resolved: .changeset/config.json');
 }
