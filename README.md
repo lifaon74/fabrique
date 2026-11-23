@@ -380,7 +380,7 @@ Versions and changelogs are automated with [Changesets](https://github.com/chang
   version bump commit back to `main` through the release deploy key (as `github-actions[bot]`).
 - pull requests labeled `dev` and pushes to `develop` publish suffixed versions
   (e.g. `2.0.39-dev.1234567890123`): they never consume the changesets nor touch the repository version.
-- every published package (dev, rc and prod) ships a `CHANGELOG.md`.
+- every package published from pending changesets ships a generated `CHANGELOG.md`.
 
 > [!NOTE]
 > Manual version bumps are no longer needed: a changeset is the only required release declaration.
