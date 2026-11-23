@@ -64,7 +64,7 @@ export async function commitVersionBump({
   }
 
   throw new Error(
-    'Unable to push the version bump commit. Rescue: run "yarn fb:run changelog", commit and push manually.',
+    'Unable to push the version bump commit. Rescue: run "git pull --rebase" on the release branch (resolve any conflict), then push.',
     { cause: lastError },
   );
 }
