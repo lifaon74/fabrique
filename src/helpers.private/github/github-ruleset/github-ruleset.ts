@@ -7,20 +7,11 @@ export type GithubRulesetBypassActorType =
   'RepositoryRole' | 'Team' | 'Integration' | 'OrganizationAdmin' | 'DeployKey' | 'User';
 
 export interface GithubRulesetBypassActor {
-  readonly actor_id: number;
+  /** The id of the actor, when the actor type has one (`null` for `DeployKey` and `OrganizationAdmin`). */
+  readonly actor_id: number | null;
   readonly actor_type: GithubRulesetBypassActorType;
   readonly bypass_mode: 'always' | 'pull_request' | 'exempt';
 }
-
-/**
- * The GitHub Actions app as a ruleset bypass actor: allows the release workflow to push
- * the version bump commit to the protected release branches.
- */
-export const GITHUB_ACTIONS_BYPASS_ACTOR: GithubRulesetBypassActor = {
-  actor_id: GITHUB_ACTIONS_APP_ID,
-  actor_type: 'Integration',
-  bypass_mode: 'always',
-};
 
 /**
  * The name of the ruleset protecting the release branches (`main` and `develop`).
@@ -67,8 +58,8 @@ export interface GithubRulesetPayload {
   readonly target: GithubRulesetTarget;
   readonly enforcement: GithubRulesetEnforcement;
   /**
-   * The actors allowed to bypass the rules: the GitHub Actions app, so the release
-   * workflow can push the version bump commit to the protected release branches.
+   * The actors allowed to bypass the rules: a write deploy key, so the release workflow
+   * can push the version bump commit to the protected release branches.
    */
   readonly bypass_actors: readonly GithubRulesetBypassActor[];
   readonly conditions: {

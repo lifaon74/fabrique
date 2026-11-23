@@ -1,7 +1,6 @@
 import {
   BRANCH_RULES_RULESET_NAME,
   GITHUB_ACTIONS_APP_ID,
-  GITHUB_ACTIONS_BYPASS_ACTOR,
   type GithubRulesetPayload,
 } from '../github-ruleset.ts';
 
@@ -25,7 +24,9 @@ export function buildBranchRulesetPayload({
     name: BRANCH_RULES_RULESET_NAME,
     target: 'branch',
     enforcement: 'active',
-    bypass_actors: [GITHUB_ACTIONS_BYPASS_ACTOR],
+    // deploy keys have no actor id: the actor covers EVERY write deploy key of the
+    // repository (the GitHub API ignores the id for the DeployKey actor type)
+    bypass_actors: [{ actor_id: null, actor_type: 'DeployKey', bypass_mode: 'always' }],
     conditions: {
       ref_name: {
         include: branches.map((branch: string): string => `refs/heads/${branch}`),
