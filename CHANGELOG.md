@@ -1,5 +1,11 @@
 # fabrique
 
+## 2.1.2 (2026-11-23)
+
+### Patch Changes
+
+- Projects generated from the `lib` template now ignore the `.superpowers/` directory in both `.gitignore` and `.prettierignore`, keeping generated repositories clean of superpowers artifacts. ([#22](https://github.com/lifaon74/fabrique/pull/22))
+
 ## 2.1.1 (2026-11-23)
 
 ### Patch Changes
