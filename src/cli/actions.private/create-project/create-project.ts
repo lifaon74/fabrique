@@ -15,6 +15,7 @@ import {
 } from '../../../helpers.private/misc/paths.constant.ts';
 import { replacePattern } from '../../../helpers.private/misc/replace-pattern.ts';
 import { normalizeGitUrlForNpm } from '../../../helpers.private/npm/normalize-git-url-for-npm.ts';
+import { parseOwnerRepoFromGitUrl } from '../../../helpers.private/npm/parse-owner-repo-from-git-url/parse-owner-repo-from-git-url.ts';
 import { removeTrailingSlash } from '../../../helpers.private/path/remove-traling-slash.ts';
 
 export interface CreateProjectOptions {
@@ -55,7 +56,15 @@ export function createProject({ type, name, logger }: CreateProjectOptions): Pro
     const description: string = await input({ message: 'Description' });
     const reviewer: string = await input({ message: 'Reviewer', required: true });
     const author: string = await input({ message: 'Author', default: reviewer });
-    const giturl: string = normalizeGitUrlForNpm(await input({ message: 'Git url' }));
+    const giturl: string = normalizeGitUrlForNpm(
+      await input({ message: 'Git url', required: true }),
+    );
+
+    const repo: string | undefined = parseOwnerRepoFromGitUrl(giturl);
+
+    if (repo === undefined) {
+      throw new Error('Unable to extract owner/repo from the git url.');
+    }
 
     const values = {
       libname,
@@ -63,6 +72,7 @@ export function createProject({ type, name, logger }: CreateProjectOptions): Pro
       reviewer,
       author,
       giturl,
+      repo,
     };
 
     await logger.asyncTask('initialize', async (logger: Logger): Promise<void> => {
@@ -108,6 +118,7 @@ const DEFAULT_REPLACE_PATTERNS: readonly RegExp[] = [
   p_ext('md'),
   p_name('LICENSE'),
   p_name('package.json'),
+  p_name('config.json'),
 ];
 
 interface ReplacePatternsOptions {
