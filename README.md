@@ -316,6 +316,9 @@ This command configures the basic rules of the GitHub repository of the current 
   - the `fabrique-release` write deploy key can bypass the rules: the release workflow pushes
     the version bump commit with it. Its private key is stored in the `RELEASE_DEPLOY_KEY`
     Actions secret and is rotated on each run of this command.
+    Note: GitHub scopes the `DeployKey` bypass to the key type — while it is configured, any
+    write deploy key of the repository (including ones you add for other tools) can bypass
+    these rules.
 - a tag ruleset on release tags (`v*`): deletion and force-push are forbidden
 
 > [!IMPORTANT]
