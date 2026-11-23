@@ -1,5 +1,11 @@
 # fabrique
 
+## 2.1.1 (2026-11-23)
+
+### Patch Changes
+
+- Polished the release automation: the version bump commits are now authored as `github-actions[bot]` (with the bot badge on GitHub), and the generated `CHANGELOG.md` is exempt from the format check so it cannot break `fb:format:check` after a release. ([#21](https://github.com/lifaon74/fabrique/pull/21))
+
 ## 2.1.0 (2026-11-23)
 
 ### Minor Changes
