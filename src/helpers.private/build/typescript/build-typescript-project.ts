@@ -103,6 +103,14 @@ export async function buildTypescriptProject({
 
   const outputPackageJsonPath: string = join(outputDirectory, 'package.json');
 
+  await logger.asyncTask('copy other files', async (logger: Logger): Promise<void> => {
+    await copyOtherPackageFiles({
+      outputDirectory,
+      cwd,
+      logger,
+    });
+  });
+
   await logger.asyncTask('generate CHANGELOG', async (logger: Logger): Promise<void> => {
     const outputChangesetsDirectoryPath: string = join(outputDirectory, '.changeset');
 
@@ -135,13 +143,5 @@ export async function buildTypescriptProject({
             : relativePath(absoluteProtectedIndexFilePath, cwd),
       }),
     );
-  });
-
-  await logger.asyncTask('copy other files', async (logger: Logger): Promise<void> => {
-    await copyOtherPackageFiles({
-      outputDirectory,
-      cwd,
-      logger,
-    });
   });
 }
