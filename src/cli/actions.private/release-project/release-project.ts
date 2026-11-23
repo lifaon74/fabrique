@@ -4,11 +4,13 @@ import { consumeChangesets } from '../../../helpers.private/changeset/consume-ch
 import { execCommandInherit } from '../../../helpers.private/cmd/exec-command.ts';
 import type { PackageJson } from '../../../helpers.private/file/package-json/package-json.ts';
 import { readPackageJsonFile } from '../../../helpers.private/file/package-json/read-package-json-file.ts';
+import type { GitIdentity } from '../../../helpers.private/git/git-identity/git-identity.ts';
 import type { Logger } from '../../../helpers.private/log/logger.ts';
 import { parseSemverStrict, type Semver } from '../../../helpers.private/misc/semver/semver.ts';
 import { isNpmPackagePublished } from '../../../helpers.private/npm/is-npm-version-published/is-npm-package-published.ts';
 import { toAbsolutePath } from '../../../helpers.private/path/to-absolute-path.ts';
 import { commitVersionBump } from '../../../helpers.private/release/commit-version-bump/commit-version-bump.ts';
+import type { OnAlreadyPublished } from '../../../helpers.private/release/on-already-published/on-already-published.ts';
 import { releaseModeToNpmTag } from '../../../helpers.private/release/release-mode/release-mode-to-npm-tag.ts';
 import type { ReleaseMode } from '../../../helpers.private/release/release-mode/release-mode.ts';
 import { buildProject } from '../build-project/build-project.ts';
@@ -18,7 +20,8 @@ export interface ReleaseProjectOptions {
   readonly dry?: boolean;
   readonly cwd?: string;
   readonly output?: string;
-  readonly gitIdentity?: 'bot' | 'local';
+  readonly gitIdentity?: GitIdentity;
+  readonly onAlreadyPublished?: OnAlreadyPublished;
   readonly logger: Logger;
 }
 
@@ -31,6 +34,7 @@ export function releaseProject({
   cwd = process.cwd(),
   output = 'dist',
   gitIdentity = 'local',
+  onAlreadyPublished = 'throw',
   logger,
 }: ReleaseProjectOptions): Promise<void> {
   return logger.asyncTask('release', async (logger: Logger): Promise<void> => {
@@ -77,18 +81,22 @@ export function releaseProject({
     const outputVersion: Semver = parseSemverStrict(outputPackageJson.version);
     const baseOutputVersion: string = `${outputVersion.major}.${outputVersion.minor}.${outputVersion.patch}`;
 
-    if (
-      await isNpmPackagePublished({
-        name: outputPackageJson.name,
-        version: baseOutputVersion,
-      })
-    ) {
+    const alreadyPublished: boolean = await isNpmPackagePublished({
+      name: outputPackageJson.name,
+      version: baseOutputVersion,
+    });
+
+    if (alreadyPublished && onAlreadyPublished !== 'skip') {
       throw new Error(
-        `Package ${outputPackageJson.name}@${baseOutputVersion} already exists on npm.`,
+        `Package ${outputPackageJson.name}@${baseOutputVersion} already exists on npm. Add a changeset to bump the version.`,
       );
     }
 
-    {
+    if (alreadyPublished) {
+      logger.warn(
+        `SKIP (non-blocking): package ${outputPackageJson.name}@${baseOutputVersion} already exists on npm.`,
+      );
+    } else {
       const tag: string = releaseModeToNpmTag(mode);
 
       const args: string[] = ['publish', '--access', 'public'];

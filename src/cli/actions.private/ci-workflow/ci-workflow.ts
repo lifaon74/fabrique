@@ -1,4 +1,5 @@
 import { loadOptionallyEnvFile } from '../../../helpers.private/env/env-file/load-optionally-env-file.ts';
+import type { GitIdentity } from '../../../helpers.private/git/git-identity/git-identity.ts';
 import { getEnvGithubCiConfig } from '../../../helpers.private/github/github-ci-config/env/get-env-github-ci-config.ts';
 import type {
   GithubCiConfig,
@@ -6,8 +7,9 @@ import type {
 } from '../../../helpers.private/github/github-ci-config/github-ci-config.ts';
 import type { Logger } from '../../../helpers.private/log/logger.ts';
 import { getEnvCiReleaseDryRun } from '../../../helpers.private/release/env/get-env-ci-release-dry-run.ts';
+import type { OnAlreadyPublished } from '../../../helpers.private/release/on-already-published/on-already-published.ts';
 import type { ReleaseMode } from '../../../helpers.private/release/release-mode/release-mode.ts';
-import { releaseProject, type ReleaseProjectOptions } from '../release-project/release-project.ts';
+import { releaseProject } from '../release-project/release-project.ts';
 
 export interface CiWorkflowOptions {
   readonly type: 'release' | string;
@@ -45,9 +47,6 @@ async function ciRelease({ githubCiConfig, logger }: CiReleaseOptions): Promise<
   const dryRun: boolean = getEnvCiReleaseDryRun();
   // const jobUrl: string = `${githubCiConfig.server_url}/${githubCiConfig.repository}/actions/runs/${githubCiConfig.run_id}`;
 
-  const pushOptions: Pick<ReleaseProjectOptions, 'gitIdentity'> =
-    githubCiConfig.event_name === 'push' ? { gitIdentity: 'bot' } : {};
-
   if (!ciReleaseContext.shouldRelease) {
     logger.info(
       `SKIP: CI release disabled for ${githubCiConfig.event_name}:${ciReleaseContext.branchName} (missing required PR label "dev").`,
@@ -58,7 +57,8 @@ async function ciRelease({ githubCiConfig, logger }: CiReleaseOptions): Promise<
   await releaseProject({
     mode: ciReleaseContext.mode,
     dry: dryRun,
-    ...pushOptions,
+    gitIdentity: ciReleaseContext.gitIdentity,
+    onAlreadyPublished: ciReleaseContext.onAlreadyPublished,
     logger,
   });
 }
@@ -69,6 +69,8 @@ interface CiReleaseContext {
   readonly headSha: string;
   readonly mode: ReleaseMode;
   readonly shouldRelease: boolean;
+  readonly gitIdentity: GitIdentity;
+  readonly onAlreadyPublished: OnAlreadyPublished;
 }
 
 function inferCiReleaseContext(githubCiConfig: GithubCiConfig): CiReleaseContext {
@@ -77,6 +79,8 @@ function inferCiReleaseContext(githubCiConfig: GithubCiConfig): CiReleaseContext
   let headSha: string;
   let mode: ReleaseMode;
   let shouldRelease: boolean;
+  let gitIdentity: GitIdentity;
+  let onAlreadyPublished: OnAlreadyPublished;
 
   if (githubCiConfig.event_name === 'pull_request') {
     branchName = verifyBranchTargetsMainOrDevelop(githubCiConfig.base_ref);
@@ -88,12 +92,16 @@ function inferCiReleaseContext(githubCiConfig: GithubCiConfig): CiReleaseContext
         return label.name === 'dev';
       },
     );
+    gitIdentity = 'local';
+    onAlreadyPublished = 'throw';
   } else if (githubCiConfig.event_name === 'push') {
     branchName = verifyBranchTargetsMainOrDevelop(githubCiConfig.ref_name);
     baseSha = githubCiConfig.event.before;
     headSha = githubCiConfig.sha;
     mode = branchName === 'develop' ? 'rc' : 'prod';
     shouldRelease = true;
+    gitIdentity = 'bot';
+    onAlreadyPublished = 'skip';
   } else {
     throw new Error(
       `Unsupported event "${githubCiConfig.event_name}". Expected "push" or "pull_request".`,
@@ -106,6 +114,8 @@ function inferCiReleaseContext(githubCiConfig: GithubCiConfig): CiReleaseContext
     headSha,
     mode,
     shouldRelease,
+    gitIdentity,
+    onAlreadyPublished,
   };
 }
 

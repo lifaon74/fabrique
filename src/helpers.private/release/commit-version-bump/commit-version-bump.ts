@@ -4,12 +4,13 @@ import { execCommandInherit } from '../../cmd/exec-command.ts';
 import { readPackageJsonFile } from '../../file/package-json/read-package-json-file.ts';
 import { gitAddPaths } from '../../git/git-add-paths/git-add-paths.ts';
 import { gitCommit } from '../../git/git-commit/git-commit.ts';
+import type { GitIdentity } from '../../git/git-identity/git-identity.ts';
 import { setUpGitConfig } from '../../git/set-up-git-config.ts';
 import type { Logger } from '../../log/logger.ts';
 
 export interface CommitVersionBumpOptions {
   readonly cwd?: string;
-  readonly identity?: 'bot' | 'local';
+  readonly identity?: GitIdentity;
   readonly dry?: boolean;
   readonly logger: Logger;
 }
