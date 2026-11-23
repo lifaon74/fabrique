@@ -224,7 +224,8 @@ interface RotateReleaseDeployKeyOptions {
  * deploy keys).
  *
  * The secret is set BEFORE any ruleset update: a ruleset failure then leaves the previous
- * key and the previous ruleset consistent, and a re-run repairs everything.
+ * key and the previous ruleset consistent (the newly created key survives until the next
+ * run), and a re-run repairs everything.
  */
 async function rotateReleaseDeployKey({
   repository,
