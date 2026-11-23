@@ -26,14 +26,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
-      id-token: write  # Required for OIDC
-      contents: write  # Required to push the version bump commit
+      id-token: write # Required for OIDC
+      contents: write # Required to push the version bump commit
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
+          # the release deploy key lets the job push the version bump commit through the
+          # branch ruleset (on fork pull requests it is unavailable: the run is a dry-run
+          # that never pushes, and checkout falls back to the default token)
+          ssh-key: ${{ secrets.RELEASE_DEPLOY_KEY }}
 
       - name: Enable Corepack
         # Node.js >= 25 no longer bundles Corepack
@@ -68,5 +72,5 @@ jobs:
         run: yarn fb:ci:release
         env:
           GITHUB_CI_CONFIG: ${{ toJson(github) }}
-          GITHUB_TOKEN: ''  # fork PR: untrusted code, the dry run needs no changelog links
+          GITHUB_TOKEN: '' # fork PR: untrusted code, the dry run needs no changelog links
           CI_RELEASE_DRY_RUN: 'true'

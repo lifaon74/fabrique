@@ -26,7 +26,9 @@ export async function commitVersionBump({
   logger,
 }: CommitVersionBumpOptions): Promise<void> {
   const version: string = (await readPackageJsonFile(join(cwd, 'package.json'))).version;
-  const message: string = `chore: bump package version to ${version}`;
+  // a deploy key push triggers workflows, unlike a GITHUB_TOKEN push: "[skip ci]" prevents
+  // a green no-op release run on the version bump push
+  const message: string = `chore: bump package version to ${version} [skip ci]`;
 
   if (dry) {
     logger.debug('(dry) git add package.json CHANGELOG.md .changeset');
