@@ -57,6 +57,7 @@ yarn install
 1. Fork the repository
 1. Add the feature or fix by modifying the code in the `src/` directory
 1. Add/write some tests with good code coverage (run them with `yarn fb:test:coverage`)
+1. Add a [changeset](https://github.com/changesets/changesets) in `.changeset/` if the PR affects the published package (see the [Changelog and releases](README.md#changelog-and-releases) section of the README, or use the `generate-changeset` agent skill)
 1. Format the code using the command `yarn fb:format`
 1. Commit and push your work following the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) convention
 1. Create a PR from your fork to the upstream repository, clearly explaining what was added or fixed.
@@ -66,6 +67,7 @@ yarn install
 > The `release.yml` workflow runs on `pull_request` and `push` events for the `main` and `develop` branches.
 > It invokes `yarn fb:ci:release`, which builds and publishes the packages.
 > Note that the `publish` step runs only if the equivalent stable version (`x.y.z`) does not already exist on npm.
+> On `main`, the release also consumes the pending changesets and pushes the version bump commit back to the branch (see the [Changelog and releases](README.md#changelog-and-releases) section of the README).
 
 ### 1. Pull Request to `main` or `develop`
 
@@ -77,7 +79,7 @@ yarn install
 
 > [!NOTE]
 > The PR is published only if it carries the `dev` label — add it to the PR to get a `dev` release; otherwise the release is skipped.
-> Pull requests coming from forks always run in dry-run mode: nothing is published.
+> Pull requests coming from forks always run in dry-run mode: nothing is published, and no changelog link is resolved.
 
 ### 2. Push to `develop`
 
@@ -88,6 +90,7 @@ yarn install
 
 - Stable publication: `x.y.z`
 - npm dist-tag: `latest`
+- The pending changesets are consumed: the repository version is bumped, the `CHANGELOG.md` is updated, the consumed changesets are removed, and the result is committed and pushed back to `main` as `github-actions[bot]`.
 
 ### Graph
 
@@ -102,6 +105,7 @@ flowchart LR
   PUBLISH_RC_PACKAGES["publish &quot;rc&quot; packages"]
   BUILD_PROD_PACKAGES["build &quot;prod&quot; packages"]
   PUBLISH_PROD_PACKAGES["publish &quot;prod&quot; packages"]
+  COMMIT_VERSION_BUMP["commit &amp; push the version bump"]
   TARGET_BRANCH{"branch"}
 
   EVENT -- "pull_request" --> HAS_DEV_TAG
@@ -116,11 +120,12 @@ flowchart LR
 
   TARGET_BRANCH -- "main" --> BUILD_PROD_PACKAGES
   BUILD_PROD_PACKAGES --> PUBLISH_PROD_PACKAGES
+  PUBLISH_PROD_PACKAGES --> COMMIT_VERSION_BUMP
 ```
 
 ## Important Rules
 
-- If an equivalent **stable** version already exists on npm, the release fails — bump the `package.json#version` before releasing (this also blocks `dev` / `rc` releases of a stable version that was already published).
-- The `package.json` version in the repo must always be a stable version (`x.y.z`).
+- If an equivalent **stable** version already exists on npm: CI `push` releases skip the publication with a warning (nothing to release), while manual releases and `dev` pull requests fail — add a changeset to bump the version automatically (manual `package.json#version` bumps are no longer needed).
+- The `package.json` version in the repo must always be a stable version (`x.y.z`): the version bumps come from the changesets, consumed on `main` only.
 - The `-dev` / `-rc` suffixes are generated in CI.
 - The npm publish authenticates with [GitHub Actions OIDC](https://docs.github.com/en/actions/security-for-github-actions/security-hardening-your-deployments/about-security-hardening-with-oidc): no `NPM_TOKEN` secret is required (the `release.yml` workflow requests the `id-token: write` permission).
