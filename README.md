@@ -197,6 +197,7 @@ This command releases an existing `fabrique` project, performing the following s
 - checks that the resulting _build artifact_ can be published on npm.
 - publishes the package on npm.
 - in `prod` mode only: consumes the pending changesets (`.changeset/*.md`) — bumps the repository version, updates the `CHANGELOG.md`, removes the consumed changesets — then commits and pushes the update to the release branch (as `github-actions[bot]` when run from the CI).
+  The push authenticates with the release deploy key, and the commit message carries `[skip ci]` so it does not re-trigger the release.
 
 > [!IMPORTANT]
 > Run the command **inside** the `fabrique` project.
@@ -312,7 +313,9 @@ This command configures the basic rules of the GitHub repository of the current 
 - a branch ruleset on `main` and `develop`:
   - push, force-push and deletion are forbidden: changes must go through a pull request
   - the CI check (`Check`) must pass, with an up-to-date branch, to allow the merge
-  - the `GitHub Actions` app can bypass the rules: the release workflow pushes the version bump commit
+  - the `fabrique-release` write deploy key can bypass the rules: the release workflow pushes
+    the version bump commit with it. Its private key is stored in the `RELEASE_DEPLOY_KEY`
+    Actions secret and is rotated on each run of this command.
 - a tag ruleset on release tags (`v*`): deletion and force-push are forbidden
 
 > [!IMPORTANT]
@@ -371,7 +374,7 @@ Versions and changelogs are automated with [Changesets](https://github.com/chang
 
 - on merge to `main`, the release workflow publishes the package, then consumes the pending changesets:
   it bumps the version, updates the `CHANGELOG.md`, removes the consumed changesets and pushes a
-  version bump commit back to `main` (as `github-actions[bot]`).
+  version bump commit back to `main` through the release deploy key (as `github-actions[bot]`).
 - pull requests labeled `dev` and pushes to `develop` publish suffixed versions
   (e.g. `2.0.39-dev.1234567890123`): they never consume the changesets nor touch the repository version.
 - every published package (dev, rc and prod) ships a `CHANGELOG.md`.
@@ -381,7 +384,7 @@ Versions and changelogs are automated with [Changesets](https://github.com/chang
 
 > [!IMPORTANT]
 > Existing repositories must re-run `fabrique setup-github-repository` once: the branch ruleset must
-> allow the `GitHub Actions` app to push the version bump commit.
+> allow the `fabrique-release` deploy key to push the version bump commit.
 
 > [!TIP]
 > Changelog links are resolved through the GitHub API. When building or releasing locally with pending
