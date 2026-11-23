@@ -57,7 +57,7 @@ yarn install
 1. Fork the repository
 1. Add the feature or fix by modifying the code in the `src/` directory
 1. Add/write some tests with good code coverage (run them with `yarn fb:test:coverage`)
-1. Add a [changeset](https://github.com/changesets/changesets) in `.changeset/` if the PR affects the published package (see the [Changelog and releases](README.md#changelog-and-releases) section of the README, or use the `generate-changeset` agent skill)
+1. Add a [changeset](https://github.com/changesets/changesets) in `.changeset/` if the PR affects the published package (or use the `generate-changeset` agent skill)
 1. Format the code using the command `yarn fb:format`
 1. Commit and push your work following the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) convention
 1. Create a PR from your fork to the upstream repository, clearly explaining what was added or fixed.
@@ -67,7 +67,7 @@ yarn install
 > The `release.yml` workflow runs on `pull_request` and `push` events for the `main` and `develop` branches.
 > It invokes `yarn fb:ci:release`, which builds and publishes the packages.
 > Note that the `publish` step runs only if the equivalent stable version (`x.y.z`) does not already exist on npm.
-> On `main`, the release also consumes the pending changesets and pushes the version bump commit back to the branch (see the [Changelog and releases](README.md#changelog-and-releases) section of the README).
+> On `main`, the release also consumes the pending changesets and pushes the version bump commit back to the branch.
 
 ### 1. Pull Request to `main` or `develop`
 
