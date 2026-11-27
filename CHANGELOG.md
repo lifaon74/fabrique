@@ -1,5 +1,11 @@
 # fabrique
 
+## 2.1.3 (2026-11-27)
+
+### Patch Changes
+
+- Upgraded Yarn to 4.19.0 and refreshed the dependency ranges (`vite`, `vitest`, `@inquirer/prompts`, `@types/node`, `@vitest/coverage-istanbul`); projects generated from the `lib` template now ship with Yarn 4.19.0 and the updated dev dependencies. ([#23](https://github.com/lifaon74/fabrique/pull/23))
+
 ## 2.1.2 (2026-11-23)
 
 ### Patch Changes
